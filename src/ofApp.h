@@ -29,13 +29,14 @@ class ofApp : public ofBaseApp{
 		ofSoundStream soundStream;
 
 		float 	pan;
-		int		sampleRate;
+		// int	sampleRate;
 		bool 	bNoise;
 		float 	volume;
 
 		vector <float> lAudio;
 		vector <float> rAudio;
 		vector <std::complex<float>> dftAudio;
+		vector<float> dftAudioNorm;
 		
 		//------------------- for the simple sine wave synthesis
 		float 	targetFrequency;

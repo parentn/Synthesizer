@@ -1,14 +1,17 @@
 #include "ofApp.h"
 #include <complex>
 #include <math.h>
+#include "addSignal.h"
 
+extern int bufferSize;
+extern int sampleRate;
 //--------------------------------------------------------------
 void ofApp::setup(){
 
 	ofBackground(34, 34, 34);
 	
 	int bufferSize		= 512;
-	sampleRate 			= 44100;
+	//sampleRate 			= 44100;
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
 	phaseAdderTarget 	= 0.0f;
@@ -18,6 +21,8 @@ void ofApp::setup(){
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
 	dftAudio.assign(bufferSize, 0.0);
+	dftAudioNorm.assign(bufferSize, 0.0); 
+
 	
 	soundStream.printDeviceList();
 
@@ -74,7 +79,7 @@ void ofApp::update(){
 //--------------------------------------------------------------
 std::vector<std::complex<float>> compute_dft(std::vector<std::complex<float>> dftAudio, std::vector<float> audio){
 	int size_sample = audio.size();
-	std::complex<float> omega = std::exp(std::complex<float>(0, -2 * M_PI / size_sample));
+	std::complex<float> omega = std::exp(std::complex<float>(0, - 2. * M_PI / size_sample));
 	int i = 0;
 	std::complex<float> omega_i(1.0,0.0);
 	int k = 0;
@@ -168,13 +173,23 @@ void ofApp::draw(){
 
 		ofSetColor(245, 58, 135);
 		ofSetLineWidth(3);
+
+		ofTranslate(0, 200, 0);
 		dftAudio = compute_dft(dftAudio, rAudio);
-			ofBeginShape();
+
+		float maxDft = 0.0;
+		for(size_t i=0; i < dftAudio.size(); i++){
+			dftAudioNorm[i] = std::norm(dftAudio[i]);
+			maxDft = (dftAudioNorm[i] > maxDft) ? dftAudioNorm[i] : maxDft;
+		}
+			// ofBeginShape();
 			for (unsigned int i = 0; i < dftAudio.size(); i++){
 				float x =  ofMap(i, 0, dftAudio.size(), 0, 900, true);
-				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
+				float y = ofMap(std::norm(dftAudio[i]), 0, maxDft, 0, 200, true);
+				// ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
+				ofDrawLine(x, float(0.), x, -y);
 			}
-			ofEndShape(false);
+			// ofEndShape(false);
 			
 		ofPopMatrix();
 	ofPopStyle();
@@ -271,6 +286,8 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 		phase -= TWO_PI;
 	}
 
+	s_signal signal(0., 100.0, 0.5);
+	add_signal(buffer, signal);
 	if ( bNoise == true){
 		// ---------------------- noise --------------
 		for (size_t i = 0; i < buffer.getNumFrames(); i++){
@@ -279,13 +296,15 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 		}
 	} else {
 		phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
+
 		for (size_t i = 0; i < buffer.getNumFrames(); i++){
-			phase += phaseAdder;
-			float sample = sin(phase);
-			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = sample * volume * leftScale;
-			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = sample * volume * rightScale;
+			// phase += phaseAdder;
+			// float sample = sin(phase);
+			lAudio[i] = buffer[i*buffer.getNumChannels()    ]; // = sample * volume * leftScale;
+			rAudio[i] = buffer[i*buffer.getNumChannels() + 1]; // = sample * volume * rightScale;
 		}
 	}
+
 
 }
 

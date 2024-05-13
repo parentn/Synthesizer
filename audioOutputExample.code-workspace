@@ -10,5 +10,16 @@
 			"path": "${workspaceRoot}/../../../../addons"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"array": "cpp",
+			"string_view": "cpp",
+			"initializer_list": "cpp",
+			"random": "cpp",
+			"limits": "cpp",
+			"semaphore": "cpp",
+			"cmath": "cpp",
+			"complex": "cpp"
+		}
+	}
 }
