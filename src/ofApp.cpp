@@ -10,7 +10,7 @@ void ofApp::setup(){
 
 	ofBackground(34, 34, 34);
 	
-	int bufferSize		= 512;
+	// int bufferSize		= 512;
 	//sampleRate 			= 44100;
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
@@ -285,9 +285,6 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	while (phase > TWO_PI){
 		phase -= TWO_PI;
 	}
-
-	s_signal signal(0., 100.0, 0.5);
-	add_signal(buffer, signal);
 	if ( bNoise == true){
 		// ---------------------- noise --------------
 		for (size_t i = 0; i < buffer.getNumFrames(); i++){
@@ -295,8 +292,10 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = ofRandom(0, 1) * volume * rightScale;
 		}
 	} else {
-		phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
-
+		// phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
+		phaseAdder = phaseAdder + 2.0 * M_PI * 1000.0 * bufferSize / sampleRate;
+		s_signal signal(phaseAdder, 1000.0, 0.5);
+		add_signal(buffer, signal);
 		for (size_t i = 0; i < buffer.getNumFrames(); i++){
 			// phase += phaseAdder;
 			// float sample = sin(phase);
