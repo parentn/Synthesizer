@@ -28,6 +28,6 @@
 			"type_traits": "cpp",
 			"utility": "cpp",
 			"vector": "cpp"
-		}
+		},
 	}
 }
