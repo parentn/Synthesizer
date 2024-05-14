@@ -2,6 +2,11 @@
 
 #include "ofMain.h"
 #include <complex>
+typedef struct{
+	float phase;
+	float frequency;
+	float volume;
+} s_signal;
 
 class ofApp : public ofBaseApp{
 
@@ -25,7 +30,6 @@ class ofApp : public ofBaseApp{
 		
 		void audioOut(ofSoundBuffer & buffer);
 		
-		
 		ofSoundStream soundStream;
 
 		float 	pan;
@@ -35,12 +39,18 @@ class ofApp : public ofBaseApp{
 
 		vector <float> lAudio;
 		vector <float> rAudio;
-		vector <std::complex<float>> dftAudio;
-		vector<float> dftAudioNorm;
+
+		ofSoundBuffer buffer;
 		
 		//------------------- for the simple sine wave synthesis
 		float 	targetFrequency;
 		float 	phase;
 		float 	phaseAdder;
 		float 	phaseAdderTarget;
+
+		void addSignal(s_signal signal);
+		size_t bufferSize;
+		size_t sampleRate;
+		vector <std::complex<float>> dftAudio;
+		vector<float> dftAudioNorm;
 };

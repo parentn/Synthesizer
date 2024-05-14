@@ -1,14 +1,43 @@
 #include "ofApp.h"
 #include <complex>
 #include <math.h>
-#include "addSignal.h"
+#include <iostream>
 
-extern int bufferSize;
-extern int sampleRate;
 //--------------------------------------------------------------
+
+void ofApp::addSignal(s_signal signal){
+	float pan = 0.5f;
+	float leftScale = 1 - pan;
+	float rightScale = pan;
+
+    float phase = signal.phase;
+    float volume = signal.volume;
+    float freq = signal.frequency;
+
+	// sin (n) seems to have trouble when n is very large, so we
+	// keep phase in the range of 0-TWO_PI like this:
+	while (phase > TWO_PI){
+		phase -= TWO_PI;
+	}
+    float value = phase;
+    for (size_t i = 0; i < bufferSize; i++){
+        value += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+        float sample = sin(value);
+        lAudio[i] = sample * volume * leftScale;
+        rAudio[i] = sample * volume * rightScale;
+    }
+}
+
+
 void ofApp::setup(){
 
 	ofBackground(34, 34, 34);
+
+	bufferSize = soundStream.getBufferSize();
+	sampleRate = soundStream.getSampleRate();
+
+	std::cout << "Buffer Size is " << bufferSize << std::endl;
+	std::cout << "Sample Rate is " << sampleRate << std::endl;
 	
 	// int bufferSize		= 512;
 	//sampleRate 			= 44100;
@@ -285,26 +314,16 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	while (phase > TWO_PI){
 		phase -= TWO_PI;
 	}
-	if ( bNoise == true){
-		// ---------------------- noise --------------
-		for (size_t i = 0; i < buffer.getNumFrames(); i++){
-			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = ofRandom(0, 1) * volume * leftScale;
-			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = ofRandom(0, 1) * volume * rightScale;
-		}
-	} else {
-		// phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
-		phaseAdder = phaseAdder + 2.0 * M_PI * 1000.0 * bufferSize / sampleRate;
-		s_signal signal(phaseAdder, 1000.0, 0.5);
-		add_signal(buffer, signal);
-		for (size_t i = 0; i < buffer.getNumFrames(); i++){
-			// phase += phaseAdder;
-			// float sample = sin(phase);
-			lAudio[i] = buffer[i*buffer.getNumChannels()    ]; // = sample * volume * leftScale;
-			rAudio[i] = buffer[i*buffer.getNumChannels() + 1]; // = sample * volume * rightScale;
-		}
+	// phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
+	phaseAdder = phaseAdder + 2.0 * M_PI * 1000.0 * bufferSize / sampleRate;
+	s_signal signal(phaseAdder, 1000.0, 0.5);
+	addSignal(signal);
+	for (size_t i = 0; i < buffer.getNumFrames(); i++){
+		// phase += phaseAdder;
+		// float sample = sin(phase);
+		buffer[i*buffer.getNumChannels()    ] = lAudio[i]; // = sample * volume * leftScale;
+		buffer[i*buffer.getNumChannels() + 1] = rAudio[i]; // = sample * volume * rightScale;
 	}
-
-
 }
 
 //--------------------------------------------------------------
