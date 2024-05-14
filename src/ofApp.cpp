@@ -244,7 +244,9 @@ void ofApp::draw(){
 		reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz) modify with mouse y";
 	}else{
 		reportString += "noise";	
-	}
+	};
+	reportString += "\noctave: "+ofToString(octaveIndex, 2)+", modify with w/x keys";
+	// reportString+= "\ncurrent note"+ofToString(mNote, 2);
 	ofDrawBitmapString(reportString, 32, 779);
 
 	// 	ofSetColor(225);
@@ -279,6 +281,18 @@ void ofApp::keyPressed  (int key){
 	if( key == 'n' ){
 			soundStream.stop();
 		}
+
+	switch (key)
+	{
+	case 'w':
+		octaveIndex=octaveIndex-1;
+		break;
+	case 'x':
+		octaveIndex=octaveIndex+1;
+		break;
+	default:
+		break;
+	}
 
 	switch (key)
 		{
