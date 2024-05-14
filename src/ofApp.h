@@ -3,6 +3,25 @@
 #include "ofMain.h"
 #include <complex>
 
+enum class Notes
+{
+	C,
+	Db,
+	D,
+	Eb,
+	E,
+	F,
+	Gb,
+	G,
+	Ab,
+	A,
+	Bb,
+	B
+
+};
+
+
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -42,4 +61,8 @@ class ofApp : public ofBaseApp{
 		float 	phase;
 		float 	phaseAdder;
 		float 	phaseAdderTarget;
+
+		float 	pitchToFrequency(int pitch, float A4frequency, int A4pitch);
+		Notes 	mNote;
+		int 	octaveIndex;
 };
