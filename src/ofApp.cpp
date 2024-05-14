@@ -16,15 +16,23 @@ void ofApp::addSignal(s_signal signal){
 
 	// sin (n) seems to have trouble when n is very large, so we
 	// keep phase in the range of 0-TWO_PI like this:
-	while (phase > TWO_PI){
-		phase -= TWO_PI;
-	}
-    float value = phase;
+
+    float value = phase * 2.0 * M_PI * freq;
     for (size_t i = 0; i < bufferSize; i++){
-        value += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+		while (value > TWO_PI){
+			value -= TWO_PI;
+		}
         float sample = sin(value);
-        lAudio[i] = sample * volume * leftScale;
-        rAudio[i] = sample * volume * rightScale;
+        lAudio[i] += sample * volume * leftScale;
+        rAudio[i] += sample * volume * rightScale;
+        value += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+    }
+}
+
+void ofApp::initSignal(){
+	for (size_t i = 0; i < bufferSize; i++){
+		lAudio[i] = 0.;
+		rAudio[i] = 0.;
     }
 }
 
@@ -305,19 +313,16 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
-	//pan = 0.5f;
-	float leftScale = 1 - pan;
-	float rightScale = pan;
-
-	// sin (n) seems to have trouble when n is very large, so we
-	// keep phase in the range of 0-TWO_PI like this:
-	while (phase > TWO_PI){
-		phase -= TWO_PI;
-	}
 	// phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
-	phaseAdder = phaseAdder + 2.0 * M_PI * 1000.0 * bufferSize / sampleRate;
-	s_signal signal(phaseAdder, 1000.0, 0.5);
-	addSignal(signal);
+	signals.clear();
+	s_signal signal(0., 1000.0, 0.5);
+	signals.push_back(signal);
+	initSignal();
+	for(auto & signal : signals ){
+		phaseAdder = phaseAdder + (float)(bufferSize) / (float)(sampleRate);
+		signal.phase += phaseAdder;
+		addSignal(signal);
+	}
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
 		// phase += phaseAdder;
 		// float sample = sin(phase);

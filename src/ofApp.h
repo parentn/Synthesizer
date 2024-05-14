@@ -49,8 +49,10 @@ class ofApp : public ofBaseApp{
 		float 	phaseAdderTarget;
 
 		void addSignal(s_signal signal);
+		void initSignal();
 		size_t bufferSize;
 		size_t sampleRate;
 		vector <std::complex<float>> dftAudio;
 		vector<float> dftAudioNorm;
+		vector<s_signal> signals;
 };
