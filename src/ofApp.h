@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include <complex>
+
 typedef struct{
 	float phase;
 	float frequency;
@@ -48,7 +49,7 @@ class ofApp : public ofBaseApp{
 		float 	phaseAdder;
 		float 	phaseAdderTarget;
 
-		void addSignal(s_signal signal);
+		void addSignal(s_signal& signal);
 		void initSignal();
 		size_t bufferSize;
 		size_t sampleRate;

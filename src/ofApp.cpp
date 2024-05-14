@@ -5,27 +5,26 @@
 
 //--------------------------------------------------------------
 
-void ofApp::addSignal(s_signal signal){
+void ofApp::addSignal(s_signal& signal){
 	float pan = 0.5f;
 	float leftScale = 1 - pan;
 	float rightScale = pan;
 
-    float phase = signal.phase;
+    float& phase = signal.phase;
     float volume = signal.volume;
     float freq = signal.frequency;
 
 	// sin (n) seems to have trouble when n is very large, so we
 	// keep phase in the range of 0-TWO_PI like this:
 
-    float value = phase * 2.0 * M_PI * freq;
     for (size_t i = 0; i < bufferSize; i++){
-		while (value > TWO_PI){
-			value -= TWO_PI;
+		while (phase > TWO_PI){
+			phase -= TWO_PI;
 		}
-        float sample = sin(value);
+        float sample = sin(phase);
         lAudio[i] += sample * volume * leftScale;
         rAudio[i] += sample * volume * rightScale;
-        value += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+        phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
     }
 }
 
@@ -43,12 +42,12 @@ void ofApp::setup(){
 
 	bufferSize = soundStream.getBufferSize();
 	sampleRate = soundStream.getSampleRate();
+	// bufferSize		= 512;
+	// sampleRate 		= 44100;
 
 	std::cout << "Buffer Size is " << bufferSize << std::endl;
 	std::cout << "Sample Rate is " << sampleRate << std::endl;
 	
-	// int bufferSize		= 512;
-	//sampleRate 			= 44100;
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
 	phaseAdderTarget 	= 0.0f;
@@ -64,6 +63,11 @@ void ofApp::setup(){
 	soundStream.printDeviceList();
 
 	ofSoundStreamSettings settings;
+
+	// To be removed as we want to trigger ourself the signals	
+	signals.clear();
+	s_signal signal(0., 1., 0.5);
+	signals.push_back(signal);
 
 	// if you want to set the device id to be different than the default:
 	//
@@ -313,19 +317,11 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
-	// phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
-	signals.clear();
-	s_signal signal(0., 1000.0, 0.5);
-	signals.push_back(signal);
 	initSignal();
 	for(auto & signal : signals ){
-		phaseAdder = phaseAdder + (float)(bufferSize) / (float)(sampleRate);
-		signal.phase += phaseAdder;
 		addSignal(signal);
 	}
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
-		// phase += phaseAdder;
-		// float sample = sin(phase);
 		buffer[i*buffer.getNumChannels()    ] = lAudio[i]; // = sample * volume * leftScale;
 		buffer[i*buffer.getNumChannels() + 1] = rAudio[i]; // = sample * volume * rightScale;
 	}
