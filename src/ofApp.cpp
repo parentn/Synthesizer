@@ -320,8 +320,11 @@ void ofApp::keyReleased  (int key){
 // remove the frequency change with moving mouse
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-	// int width = ofGetWidth();
-	// pan = (float)x / (float)width;
+	
+	
+	int width = ofGetWidth();
+	pan = (float)x / (float)width;
+	
 	// float height = (float)ofGetHeight();
 	// float heightPct = ((height-y) / height);
 	// targetFrequency = 2000.0f * heightPct;
@@ -331,8 +334,8 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-	// int width = ofGetWidth();
-	// pan = (float)x / (float)width;
+	int width = ofGetWidth();
+	pan = (float)x / (float)width;
 }
 
 //--------------------------------------------------------------
@@ -363,7 +366,7 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
-	pan = 0.5f;
+	//pan = 0.5f;
 	float leftScale = 1 - pan;
 	float rightScale = pan;
 
