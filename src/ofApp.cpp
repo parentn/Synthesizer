@@ -53,6 +53,8 @@ void ofApp::setup(){
 	phaseAdderTarget 	= 0.0f;
 	volume				= 0.1f;
 	bNoise 				= false;
+	octaveIndex			= 4;
+	mNote				= Notes::A;
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
@@ -146,7 +148,7 @@ void ofApp::draw(){
 
 	ofSetColor(225);
 	ofDrawBitmapString("AUDIO OUTPUT EXAMPLE", 32, 32);
-	ofDrawBitmapString("press 's' to unpause the audio\npress 'e' to pause the audio", 31, 92);
+	ofDrawBitmapString("press 'b' to unpause the audio\npress 'n' to pause the audio", 31, 92);
 	
 	ofNoFill();
 	
@@ -245,8 +247,20 @@ void ofApp::draw(){
 	}
 	ofDrawBitmapString(reportString, 32, 779);
 
+	// 	ofSetColor(225);
+	// string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+") modify with mouse x\nsynthesis: ";
+	// if( !bNoise ){
+	// 	reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz) modify with mouse y";
+	// }else{
+	// 	reportString += "noise";	
+	// }
+	// ofDrawBitmapString(reportString, 32, 779);
 }
 
+//--------------------------------------------------------------
+float ofApp::pitchToFrequency(int pitch, float A4frequency = 440.f, int A4pitch = 57){
+	return A4frequency * pow(2, ((pitch - A4pitch) / 12.f));
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed  (int key){
@@ -258,14 +272,62 @@ void ofApp::keyPressed  (int key){
 		volume = MIN(volume, 1);
 	}
 	
-	if( key == 's' ){
+	if( key == 'b' ){
 		soundStream.start();
 	}
 	
-	if( key == 'e' ){
-		soundStream.stop();
-	}
-	
+	if( key == 'n' ){
+			soundStream.stop();
+		}
+
+	switch (key)
+		{
+		case 'q':
+			mNote=Notes::C;	
+			break;
+		case 'z':
+			mNote=Notes::Db;
+			break;
+		case 's':
+			mNote=Notes::D;
+			break;
+		case 'e':
+			mNote=Notes::Eb;
+			break;
+		case 'd':
+			mNote=Notes::E;
+			break;
+		case 'f':
+			mNote=Notes::F;
+			break;
+		case 't':
+			mNote=Notes::Gb;
+			break;
+		case 'g':
+			mNote=Notes::G;
+			break;
+		case 'y':
+			mNote=Notes::Ab;
+			break;
+		case 'h':
+			mNote=Notes::A;
+			break;
+		case 'u':
+			mNote=Notes::Bb;
+			break;
+		case 'j':
+			mNote=Notes::B;
+			break;
+		default:
+			// compilation error: jump to default:
+			mNote=Notes::A;
+			break;
+		}
+	int pitchIndex = static_cast<int>(mNote);
+	int pitch=pitchIndex+octaveIndex*12;
+	float targetFrequency=pitchToFrequency(pitch); // initialization
+	phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
+
 }
 
 //--------------------------------------------------------------
@@ -273,20 +335,22 @@ void ofApp::keyReleased  (int key){
 
 }
 
+// remove the frequency change with moving mouse
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-	int width = ofGetWidth();
-	pan = (float)x / (float)width;
-	float height = (float)ofGetHeight();
-	float heightPct = ((height-y) / height);
-	targetFrequency = 2000.0f * heightPct;
-	phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
+	// int width = ofGetWidth();
+	// pan = (float)x / (float)width;
+	// float height = (float)ofGetHeight();
+	// float heightPct = ((height-y) / height);
+	// targetFrequency = 2000.0f * heightPct;
+	// targetFrequency = 3000.0f;
+	// phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-	int width = ofGetWidth();
-	pan = (float)x / (float)width;
+	// int width = ofGetWidth();
+	// pan = (float)x / (float)width;
 }
 
 //--------------------------------------------------------------
