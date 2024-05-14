@@ -112,6 +112,7 @@ void ofApp::setup(){
 
 	// on OSX: if you want to use ofSoundPlayer together with ofSoundStream you need to synchronize buffersizes.
 	// use ofFmodSetBuffersize(bufferSize) to set the buffersize in fmodx prior to loading a file.
+	targetFrequency = 0.;
 }
 
 
@@ -355,9 +356,7 @@ void ofApp::keyPressed  (int key){
 		}
 	int pitchIndex = static_cast<int>(mNote);
 	int pitch=pitchIndex+octaveIndex*12;
-	float targetFrequency=pitchToFrequency(pitch); // initialization
-	s_signal signal(0., targetFrequency, 0.1);
-	signals.push_back(signal);
+	targetFrequency=pitchToFrequency(pitch); // initialization
 	// phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
 
 }
@@ -390,7 +389,6 @@ void ofApp::mousePressed(int x, int y, int button){
 	bNoise = true;
 }
 
-
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
 	bNoise = false;
@@ -412,31 +410,10 @@ void ofApp::windowResized(int w, int h){
 }
 
 //--------------------------------------------------------------
-// float calc_sin(float phase, int mBrillance){
-// 	float sample = sin(phase);
-// 	if (mBrillance!=0){
-// 		for (int i = 1; i<=mBrillance; i++){
-// 			sample+=sin(mBrillance * phase)/mBrillance;
-// 		}
-// 	}
-// 	return sample;
-// }
-
-//--------------------------------------------------------------
-// float calc_saw(float phase, int mBrillance){
-// 	float sample = sin(phase);
-// 	if (mBrillance!=0){
-// 		for (int i = 1; i<=mBrillance; i++){
-// 			if (mBrillance%2==0){sample-=sin(mBrillance * phase)/mBrillance;}
-// 			else{sample+=sin(mBrillance * phase)/mBrillance;}
-// 		}
-// 	}
-// 	return sample;
-// }
-
-//--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
 	initSignal();
+	s_signal signal(0., targetFrequency, 0.5);
+	signals.push_back(signal);
 	for(auto & signal : signals ){
 		addSignal(signal);
 	}
