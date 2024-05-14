@@ -19,14 +19,15 @@
 			"limits": "cpp",
 			"semaphore": "cpp",
 			"cmath": "cpp",
-			"complex": "cpp"
+			"complex": "cpp",
+			"optional": "cpp",
+			"ratio": "cpp",
+			"system_error": "cpp",
+			"functional": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"utility": "cpp",
+			"vector": "cpp"
 		},
-		"makefile.launchConfigurations": [
-			{
-				"cwd": "/home/merrickdida/Projects/Synthesizer/bin",
-				"binaryPath": "/home/merrickdida/Projects/Synthesizer/bin/Synthesizer",
-				"binaryArgs": []
-			}
-		]
 	}
 }
