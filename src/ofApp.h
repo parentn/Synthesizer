@@ -8,6 +8,24 @@ typedef struct{
 	float frequency;
 	float volume;
 } s_signal;
+enum class Notes
+{
+	C,
+	Db,
+	D,
+	Eb,
+	E,
+	F,
+	Gb,
+	G,
+	Ab,
+	A,
+	Bb,
+	B
+
+};
+
+
 
 class ofApp : public ofBaseApp{
 
@@ -56,4 +74,9 @@ class ofApp : public ofBaseApp{
 		vector <std::complex<float>> dftAudio;
 		vector<float> dftAudioNorm;
 		vector<s_signal> signals;
+		float 	pitchToFrequency(int pitch, float A4frequency, int A4pitch);
+		Notes 	mNote;
+		int 	octaveIndex;
+
+		int 	mBrillance;
 };

@@ -53,6 +53,9 @@ void ofApp::setup(){
 	phaseAdderTarget 	= 0.0f;
 	volume				= 0.1f;
 	bNoise 				= false;
+	octaveIndex			= 4;
+	mNote				= Notes::A;
+	mBrillance			= 0;
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
@@ -65,9 +68,9 @@ void ofApp::setup(){
 	ofSoundStreamSettings settings;
 
 	// To be removed as we want to trigger ourself the signals	
-	signals.clear();
-	s_signal signal(0., 1., 0.5);
-	signals.push_back(signal);
+	// signals.clear();
+	// s_signal signal(0., 440., 0.1);
+	// signals.push_back(signal);
 
 	// if you want to set the device id to be different than the default:
 	//
@@ -142,9 +145,10 @@ std::vector<std::complex<float>> compute_dft(std::vector<std::complex<float>> df
 }
 
 //--------------------------------------------------------------
+//--------------------------------------------------------------
 void ofApp::draw(){
 
-	ofSetColor(225);
+ofSetColor(225);
 	ofDrawBitmapString("AUDIO OUTPUT EXAMPLE", 32, 32);
 	ofDrawBitmapString("press 's' to unpause the audio\npress 'e' to pause the audio", 31, 92);
 	
@@ -161,7 +165,7 @@ void ofApp::draw(){
 		ofSetLineWidth(1);	
 		ofDrawRectangle(0, 0, 900, 200);
 
-		ofSetColor(245, 58, 135);
+		ofSetColor(58, 135, 245);
 		ofSetLineWidth(3);
 					
 			ofBeginShape();
@@ -200,53 +204,81 @@ void ofApp::draw(){
 		ofPopMatrix();
 	ofPopStyle();
 
-
 	// draw the DFT:
 	ofPushStyle();
 		ofPushMatrix();
 		ofTranslate(32, 550, 0);
 			
 		ofSetColor(225);
-		ofDrawBitmapString("DFT of right signal", 4, 18);
+		ofDrawBitmapString("DFT Right : Red", 4, 18);
 		
 		ofSetLineWidth(1);	
 		ofDrawRectangle(0, 0, 900, 200);
 
 		ofSetColor(245, 58, 135);
 		ofSetLineWidth(3);
-
-		ofTranslate(0, 200, 0);
 		dftAudio = compute_dft(dftAudio, rAudio);
-
-		float maxDft = 0.0;
-		for(size_t i=0; i < dftAudio.size(); i++){
-			dftAudioNorm[i] = std::norm(dftAudio[i]);
-			maxDft = (dftAudioNorm[i] > maxDft) ? dftAudioNorm[i] : maxDft;
-		}
-			// ofBeginShape();
-			for (unsigned int i = 0; i < dftAudio.size(); i++){
-				float x =  ofMap(i, 0, dftAudio.size(), 0, 900, true);
-				float y = ofMap(std::norm(dftAudio[i]), 0, maxDft, 0, 200, true);
-				// ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
-				ofDrawLine(x, float(0.), x, -y);
+			ofBeginShape();
+			for (unsigned int i = 0; i < dftAudio.size() / 2; i++){ // Display only half of the DFT
+				float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
+				float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
+				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
 			}
-			// ofEndShape(false);
+			ofEndShape(false);
+			
+		ofPopMatrix();
+	ofPopStyle();
+
+	ofPushStyle();
+		ofPushMatrix();
+		ofTranslate(32, 550, 0);
+			
+		ofSetColor(225);
+		ofDrawBitmapString("\nDFT Left : Blue", 4, 18);
+		
+		ofSetLineWidth(1);	
+		ofDrawRectangle(0, 0, 900, 200);
+
+		ofSetColor(58, 135, 245); // Change colour to blue
+		ofSetLineWidth(3);
+		dftAudio = compute_dft(dftAudio, lAudio); // Compute DFT of left signal
+			ofBeginShape();
+			for (unsigned int i = 0; i < dftAudio.size() / 2; i++){ // Display only half of the DFT
+				float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
+				float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
+				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
+			}
+			ofEndShape(false);
 			
 		ofPopMatrix();
 	ofPopStyle();
 	
-		
+	// Add a comment line with current values of variables :	
 	ofSetColor(225);
 	string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+") modify with mouse x\nsynthesis: ";
 	if( !bNoise ){
 		reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz) modify with mouse y";
 	}else{
 		reportString += "noise";	
-	}
+	};
+	reportString += "\noctave: "+ofToString(octaveIndex, 2)+", modify with w/x keys";
+	// reportString+= "\ncurrent note"+ofToString(mNote, 2);
 	ofDrawBitmapString(reportString, 32, 779);
 
+	// 	ofSetColor(225);
+	// string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+") modify with mouse x\nsynthesis: ";
+	// if( !bNoise ){
+	// 	reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz) modify with mouse y";
+	// }else{
+	// 	reportString += "noise";	
+	// }
+	// ofDrawBitmapString(reportString, 32, 779);
 }
 
+//--------------------------------------------------------------
+float ofApp::pitchToFrequency(int pitch, float A4frequency = 440.f, int A4pitch = 57){
+	return A4frequency * pow(2, ((pitch - A4pitch) / 12.f));
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed  (int key){
@@ -258,35 +290,99 @@ void ofApp::keyPressed  (int key){
 		volume = MIN(volume, 1);
 	}
 	
-	if( key == 's' ){
+	if( key == 'b' ){
 		soundStream.start();
 	}
 	
-	if( key == 'e' ){
-		soundStream.stop();
+	if( key == 'n' ){
+			soundStream.stop();
+		}
+
+	switch (key)
+	{
+	case 'w':
+		octaveIndex=octaveIndex-1;
+		break;
+	case 'x':
+		octaveIndex=octaveIndex+1;
+		break;
+	default:
+		break;
 	}
-	
+
+	switch (key)
+		{
+		case 'q':
+			mNote=Notes::C;	
+			break;
+		case 'z':
+			mNote=Notes::Db;
+			break;
+		case 's':
+			mNote=Notes::D;
+			break;
+		case 'e':
+			mNote=Notes::Eb;
+			break;
+		case 'd':
+			mNote=Notes::E;
+			break;
+		case 'f':
+			mNote=Notes::F;
+			break;
+		case 't':
+			mNote=Notes::Gb;
+			break;
+		case 'g':
+			mNote=Notes::G;
+			break;
+		case 'y':
+			mNote=Notes::Ab;
+			break;
+		case 'h':
+			mNote=Notes::A;
+			break;
+		case 'u':
+			mNote=Notes::Bb;
+			break;
+		case 'j':
+			mNote=Notes::B;
+			break;
+		default:
+			// compilation error: jump to default:
+			mNote=Notes::A;
+			break;
+		}
+	int pitchIndex = static_cast<int>(mNote);
+	int pitch=pitchIndex+octaveIndex*12;
+	float targetFrequency=pitchToFrequency(pitch); // initialization
+	s_signal signal(0., targetFrequency, 0.1);
+	signals.push_back(signal);
+	// phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
+
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased  (int key){
-
+	signals.clear();
 }
 
+// remove the frequency change with moving mouse
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-	int width = ofGetWidth();
-	pan = (float)x / (float)width;
-	float height = (float)ofGetHeight();
-	float heightPct = ((height-y) / height);
-	targetFrequency = 2000.0f * heightPct;
-	phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
+	// int width = ofGetWidth();
+	// pan = (float)x / (float)width;
+	// float height = (float)ofGetHeight();
+	// float heightPct = ((height-y) / height);
+	// targetFrequency = 2000.0f * heightPct;
+	// targetFrequency = 3000.0f;
+	// phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-	int width = ofGetWidth();
-	pan = (float)x / (float)width;
+	// int width = ofGetWidth();
+	// pan = (float)x / (float)width;
 }
 
 //--------------------------------------------------------------
@@ -314,6 +410,29 @@ void ofApp::mouseExited(int x, int y){
 void ofApp::windowResized(int w, int h){
 
 }
+
+//--------------------------------------------------------------
+// float calc_sin(float phase, int mBrillance){
+// 	float sample = sin(phase);
+// 	if (mBrillance!=0){
+// 		for (int i = 1; i<=mBrillance; i++){
+// 			sample+=sin(mBrillance * phase)/mBrillance;
+// 		}
+// 	}
+// 	return sample;
+// }
+
+//--------------------------------------------------------------
+// float calc_saw(float phase, int mBrillance){
+// 	float sample = sin(phase);
+// 	if (mBrillance!=0){
+// 		for (int i = 1; i<=mBrillance; i++){
+// 			if (mBrillance%2==0){sample-=sin(mBrillance * phase)/mBrillance;}
+// 			else{sample+=sin(mBrillance * phase)/mBrillance;}
+// 		}
+// 	}
+// 	return sample;
+// }
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
