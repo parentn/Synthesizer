@@ -16,6 +16,11 @@
 				"cwd": "/home/merrickdida/Projects/Synthesizer/bin",
 				"binaryPath": "/home/merrickdida/Projects/Synthesizer/bin/Synthesizer",
 				"binaryArgs": []
+			},
+			{
+				"cwd": "/home/merrickdida/Projects/Synthesizer_old/bin",
+				"binaryPath": "/home/merrickdida/Projects/Synthesizer_old/bin/Synthesizer_old",
+				"binaryArgs": []
 			}
 		]
 	}
