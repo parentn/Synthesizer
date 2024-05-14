@@ -55,6 +55,7 @@ void ofApp::setup(){
 	bNoise 				= false;
 	octaveIndex			= 4;
 	mNote				= Notes::A;
+	mBrillance			= 0;
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
@@ -407,6 +408,29 @@ void ofApp::mouseExited(int x, int y){
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
 
+}
+
+//--------------------------------------------------------------
+float calc_sin(float phase, int mBrillance){
+	float sample = sin(phase);
+	if (mBrillance!=0){
+		for (int i = 1; i<=mBrillance; i++){
+			sample+=sin(mBrillance * phase)/mBrillance;
+		}
+	}
+	return sample;
+}
+
+//--------------------------------------------------------------
+float calc_saw(float phase, int mBrillance){
+	float sample = sin(phase);
+	if (mBrillance!=0){
+		for (int i = 1; i<=mBrillance; i++){
+			if (mBrillance%2==0){sample-=sin(mBrillance * phase)/mBrillance;}
+			else{sample+=sin(mBrillance * phase)/mBrillance;}
+		}
+	}
+	return sample;
 }
 
 //--------------------------------------------------------------

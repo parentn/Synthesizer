@@ -77,4 +77,6 @@ class ofApp : public ofBaseApp{
 		float 	pitchToFrequency(int pitch, float A4frequency, int A4pitch);
 		Notes 	mNote;
 		int 	octaveIndex;
+
+		int 	mBrillance;
 };
