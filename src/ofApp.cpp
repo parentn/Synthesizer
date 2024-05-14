@@ -100,9 +100,9 @@ std::vector<std::complex<float>> compute_dft(std::vector<std::complex<float>> df
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-	ofSetColor(225);
+ofSetColor(225);
 	ofDrawBitmapString("AUDIO OUTPUT EXAMPLE", 32, 32);
-	ofDrawBitmapString("press 'b' to unpause the audio\npress 'n' to pause the audio", 31, 92);
+	ofDrawBitmapString("press 's' to unpause the audio\npress 'e' to pause the audio", 31, 92);
 	
 	ofNoFill();
 	
@@ -117,7 +117,7 @@ void ofApp::draw(){
 		ofSetLineWidth(1);	
 		ofDrawRectangle(0, 0, 900, 200);
 
-		ofSetColor(245, 58, 135);
+		ofSetColor(58, 135, 245);
 		ofSetLineWidth(3);
 					
 			ofBeginShape();
@@ -156,14 +156,13 @@ void ofApp::draw(){
 		ofPopMatrix();
 	ofPopStyle();
 
-
 	// draw the DFT:
 	ofPushStyle();
 		ofPushMatrix();
 		ofTranslate(32, 550, 0);
 			
 		ofSetColor(225);
-		ofDrawBitmapString("DFT of right signal", 4, 18);
+		ofDrawBitmapString("DFT Right : Red", 4, 18);
 		
 		ofSetLineWidth(1);	
 		ofDrawRectangle(0, 0, 900, 200);
@@ -172,8 +171,33 @@ void ofApp::draw(){
 		ofSetLineWidth(3);
 		dftAudio = compute_dft(dftAudio, rAudio);
 			ofBeginShape();
-			for (unsigned int i = 0; i < dftAudio.size(); i++){
-				float x =  ofMap(i, 0, dftAudio.size(), 0, 900, true);
+			for (unsigned int i = 0; i < dftAudio.size() / 2; i++){ // Display only half of the DFT
+				float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
+				float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
+				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
+			}
+			ofEndShape(false);
+			
+		ofPopMatrix();
+	ofPopStyle();
+
+	ofPushStyle();
+		ofPushMatrix();
+		ofTranslate(32, 550, 0);
+			
+		ofSetColor(225);
+		ofDrawBitmapString("\nDFT Left : Blue", 4, 18);
+		
+		ofSetLineWidth(1);	
+		ofDrawRectangle(0, 0, 900, 200);
+
+		ofSetColor(58, 135, 245); // Change colour to blue
+		ofSetLineWidth(3);
+		dftAudio = compute_dft(dftAudio, lAudio); // Compute DFT of left signal
+			ofBeginShape();
+			for (unsigned int i = 0; i < dftAudio.size() / 2; i++){ // Display only half of the DFT
+				float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
+				float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
 				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
 			}
 			ofEndShape(false);
@@ -181,7 +205,7 @@ void ofApp::draw(){
 		ofPopMatrix();
 	ofPopStyle();
 	
-		
+	// Add a comment line with current values of variables :	
 	ofSetColor(225);
 	string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+") modify with mouse x\nsynthesis: ";
 	if( !bNoise ){
