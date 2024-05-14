@@ -20,6 +20,13 @@
 			"semaphore": "cpp",
 			"cmath": "cpp",
 			"complex": "cpp"
-		}
+		},
+		"makefile.launchConfigurations": [
+			{
+				"cwd": "/home/merrickdida/Projects/Synthesizer/bin",
+				"binaryPath": "/home/merrickdida/Projects/Synthesizer/bin/Synthesizer",
+				"binaryArgs": []
+			}
+		]
 	}
 }
