@@ -68,9 +68,9 @@ void ofApp::setup(){
 	ofSoundStreamSettings settings;
 
 	// To be removed as we want to trigger ourself the signals	
-	signals.clear();
-	s_signal signal(0., 1., 0.5);
-	signals.push_back(signal);
+	// signals.clear();
+	// s_signal signal(0., 440., 0.1);
+	// signals.push_back(signal);
 
 	// if you want to set the device id to be different than the default:
 	//
@@ -145,6 +145,7 @@ std::vector<std::complex<float>> compute_dft(std::vector<std::complex<float>> df
 }
 
 //--------------------------------------------------------------
+//--------------------------------------------------------------
 void ofApp::draw(){
 
 ofSetColor(225);
@@ -216,8 +217,6 @@ ofSetColor(225);
 
 		ofSetColor(245, 58, 135);
 		ofSetLineWidth(3);
-
-		ofTranslate(0, 200, 0);
 		dftAudio = compute_dft(dftAudio, rAudio);
 			ofBeginShape();
 			for (unsigned int i = 0; i < dftAudio.size() / 2; i++){ // Display only half of the DFT
@@ -249,7 +248,7 @@ ofSetColor(225);
 				float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
 				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
 			}
-			// ofEndShape(false);
+			ofEndShape(false);
 			
 		ofPopMatrix();
 	ofPopStyle();
@@ -357,13 +356,15 @@ void ofApp::keyPressed  (int key){
 	int pitchIndex = static_cast<int>(mNote);
 	int pitch=pitchIndex+octaveIndex*12;
 	float targetFrequency=pitchToFrequency(pitch); // initialization
-	phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
+	s_signal signal(0., targetFrequency, 0.1);
+	signals.push_back(signal);
+	// phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
 
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased  (int key){
-
+	signals.clear();
 }
 
 // remove the frequency change with moving mouse
@@ -411,27 +412,27 @@ void ofApp::windowResized(int w, int h){
 }
 
 //--------------------------------------------------------------
-float calc_sin(float phase, int mBrillance){
-	float sample = sin(phase);
-	if (mBrillance!=0){
-		for (int i = 1; i<=mBrillance; i++){
-			sample+=sin(mBrillance * phase)/mBrillance;
-		}
-	}
-	return sample;
-}
+// float calc_sin(float phase, int mBrillance){
+// 	float sample = sin(phase);
+// 	if (mBrillance!=0){
+// 		for (int i = 1; i<=mBrillance; i++){
+// 			sample+=sin(mBrillance * phase)/mBrillance;
+// 		}
+// 	}
+// 	return sample;
+// }
 
 //--------------------------------------------------------------
-float calc_saw(float phase, int mBrillance){
-	float sample = sin(phase);
-	if (mBrillance!=0){
-		for (int i = 1; i<=mBrillance; i++){
-			if (mBrillance%2==0){sample-=sin(mBrillance * phase)/mBrillance;}
-			else{sample+=sin(mBrillance * phase)/mBrillance;}
-		}
-	}
-	return sample;
-}
+// float calc_saw(float phase, int mBrillance){
+// 	float sample = sin(phase);
+// 	if (mBrillance!=0){
+// 		for (int i = 1; i<=mBrillance; i++){
+// 			if (mBrillance%2==0){sample-=sin(mBrillance * phase)/mBrillance;}
+// 			else{sample+=sin(mBrillance * phase)/mBrillance;}
+// 		}
+// 	}
+// 	return sample;
+// }
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
