@@ -35,6 +35,73 @@ void ofApp::initSignal(){
     }
 }
 
+void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
+	for(int k=0; k<brillance; k++){
+		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
+		signals.push_back(signal);
+	}
+}
+
+void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
+	float sign = 1.;
+	for(int k=0; k<brillance; k++){
+		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
+		signals.push_back(signal);
+		sign = -sign;
+	}
+}
+
+s_filter ofApp::lowPassFilter(float frequency, float Q){
+	float omega_0 = TWO_PI * frequency / sampleRate;
+	float cos_omega_0 = cos(omega_0);
+	float alpha = sin(omega_0) / (2.0f * Q);
+	s_filter filter;
+	float a_0 = 1.0+alpha;
+	filter.a_1 = (-2. * cos_omega_0) / a_0;
+	filter.a_2 = (1.0 - alpha) / a_0;
+	filter.b_1 = (1.0 - cos_omega_0) / (a_0);
+	filter.b_0 =  filter.b_1 / 2.0;
+	filter.b_2 = filter.b_0;
+	return filter;
+}
+
+s_filter ofApp::highPassFilter(float frequency, float Q){
+	float omega_0 = TWO_PI * frequency / sampleRate;
+	float cos_omega_0 = cos(omega_0);
+	float alpha = sin(omega_0) / (2.0f * Q);
+	s_filter filter;
+	float a_0 = 1.0+alpha;
+	filter.a_1 = (-2. * cos_omega_0) / a_0;
+	filter.a_2 = (1.0 - alpha) / a_0;
+	filter.b_1 = -(1.0 + cos_omega_0) / (a_0);
+	filter.b_0 = - filter.b_1 / 2.0;
+	filter.b_2 = filter.b_0;
+	return filter;
+}
+
+void ofApp::applyFilter(s_filter filter){
+	for(size_t i=0; i < bufferSize; i++){
+		lAudioFiltered[i] = filter.b_0 * lAudio[i] \ 
+			+ filter.b_1 * lAudioPreviousValues.x_1 \
+			+ filter.b_2 * lAudioPreviousValues.x_2 \
+			- filter.a_1 * lAudioPreviousValues.y_1 \
+			- filter.a_2 * lAudioPreviousValues.y_2;
+		lAudioPreviousValues.x_2 = lAudioPreviousValues.x_1;
+		lAudioPreviousValues.x_1 = lAudio[i];
+		lAudioPreviousValues.y_2 = lAudioPreviousValues.y_1;
+		lAudioPreviousValues.y_1 = lAudioFiltered[i];
+
+		rAudioFiltered[i] = filter.b_0 * rAudio[i] \ 
+			+ filter.b_1 * rAudioPreviousValues.x_1 \
+			+ filter.b_2 * rAudioPreviousValues.x_2 \
+			- filter.a_1 * rAudioPreviousValues.y_1 \
+			- filter.a_2 * rAudioPreviousValues.y_2;
+		rAudioPreviousValues.x_2 = rAudioPreviousValues.x_1;
+		rAudioPreviousValues.x_1 = rAudio[i]; 
+		rAudioPreviousValues.y_2 = rAudioPreviousValues.y_1;
+		rAudioPreviousValues.y_1 = rAudioFiltered[i];
+	}
+}
 
 void ofApp::setup(){
 
@@ -61,7 +128,6 @@ void ofApp::setup(){
 	rAudio.assign(bufferSize, 0.0);
 	dftAudio.assign(bufferSize, 0.0);
 	dftAudioNorm.assign(bufferSize, 0.0); 
-
 	
 	soundStream.printDeviceList();
 
@@ -120,6 +186,18 @@ void ofApp::setup(){
 		signal.frequency = 1.;
 		signal.volume = 0.05;
 	}
+
+	// Filtering 
+	rAudioFiltered.assign(bufferSize, 0.0);
+	lAudioFiltered.assign(bufferSize, 0.0);
+	lAudioPreviousValues = s_previous_values(0.f,0.f,0.f,0.f);
+	rAudioPreviousValues = s_previous_values(0.f,0.f,0.f,0.f);
+	lowFrequency = 500;
+	highFrequency = 10000;
+	lowQ = 0.1;
+	highQ = 0.1;
+	lowFilter = lowPassFilter(lowFrequency, lowQ);
+	highFilter = highPassFilter(highFrequency, highQ);
 }
 
 
@@ -162,7 +240,7 @@ ofSetColor(225);
 	
 	ofNoFill();
 	
-	// draw the left channel:
+	// draw the left and right channels:
 	ofPushStyle();
 		ofPushMatrix();
 		ofTranslate(32, 150, 0);
@@ -171,7 +249,7 @@ ofSetColor(225);
 		ofDrawBitmapString("Left Channel", 4, 18);
 		
 		ofSetLineWidth(1);	
-		ofDrawRectangle(0, 0, 900, 200);
+		ofDrawRectangle(0, 0, 450, 200);
 
 		ofSetColor(58, 135, 245);
 		ofSetLineWidth(3);
@@ -179,24 +257,22 @@ ofSetColor(225);
 			ofBeginShape();
 			
 			for (unsigned int i = 0; i < lAudio.size(); i++){
-				float x =  ofMap(i, 0, lAudio.size(), 0, 900, true);
+				float x =  ofMap(i, 0, lAudio.size(), 0, 450, true);
 				ofVertex(x, 100 -lAudio[i]*180.0f);
 			}
 			ofEndShape(false);
 			
 		ofPopMatrix();
-	ofPopStyle();
 
-	// draw the right channel:
-	ofPushStyle();
 		ofPushMatrix();
-		ofTranslate(32, 350, 0);
+		ofTranslate(32, 150, 0);
+		ofTranslate(450,0,0);
 			
 		ofSetColor(225);
 		ofDrawBitmapString("Right Channel", 4, 18);
 		
 		ofSetLineWidth(1);	
-		ofDrawRectangle(0, 0, 900, 200);
+		ofDrawRectangle(0, 0, 450, 200);
 
 		ofSetColor(245, 58, 135);
 		ofSetLineWidth(3);
@@ -204,8 +280,57 @@ ofSetColor(225);
 			ofBeginShape();
 			
 			for (unsigned int i = 0; i < rAudio.size(); i++){
-				float x =  ofMap(i, 0, rAudio.size(), 0, 900, true);
+				float x =  ofMap(i, 0, rAudio.size(), 0, 450, true);
 				ofVertex(x, 100 -rAudio[i]*180.0f);
+			}
+			ofEndShape(false);
+			
+		ofPopMatrix();
+	ofPopStyle();
+
+	// draw the left and right filtered signals:
+	ofPushStyle();
+		ofPushMatrix();
+		ofTranslate(32, 350, 0);
+			
+		ofSetColor(225);
+		string info = "Left filtered at frequency " + ofToString(lowFrequency); 
+		ofDrawBitmapString(info, 4, 18);
+		
+		ofSetLineWidth(1);	
+		ofDrawRectangle(0, 0, 450, 200);
+
+		ofSetColor(58, 135, 245);
+		ofSetLineWidth(3);
+					
+			ofBeginShape();
+			
+			for (unsigned int i = 0; i < lAudioFiltered.size(); i++){
+				float x =  ofMap(i, 0, lAudioFiltered.size(), 0, 450, true);
+				ofVertex(x, 100 -lAudioFiltered[i]*180.0f);
+			}
+			ofEndShape(false);
+			
+		ofPopMatrix();
+
+		ofPushMatrix();
+		ofTranslate(32, 350, 0);
+		ofTranslate(450,0,0);
+			
+		ofSetColor(225);
+		ofDrawBitmapString("Right filtered", 4, 18);
+		
+		ofSetLineWidth(1);	
+		ofDrawRectangle(0, 0, 450, 200);
+
+		ofSetColor(245, 58, 135);
+		ofSetLineWidth(3);
+					
+			ofBeginShape();
+			
+			for (unsigned int i = 0; i < rAudioFiltered.size(); i++){
+				float x =  ofMap(i, 0, rAudioFiltered.size(), 0, 450, true);
+				ofVertex(x, 100 -rAudioFiltered[i]*180.0f);
 			}
 			ofEndShape(false);
 			
@@ -225,13 +350,28 @@ ofSetColor(225);
 
 		ofSetColor(245, 58, 135);
 		ofSetLineWidth(3);
+		ofTranslate(0, 200, 0);
+		float maxDft = 0.0;
+		for(size_t i=0; i < dftAudio.size(); i++){
+			dftAudioNorm[i] = std::norm(dftAudio[i]);
+			maxDft = (dftAudioNorm[i] > maxDft) ? dftAudioNorm[i] : maxDft;
+		}
 		dftAudio = compute_dft(dftAudio, rAudio);
 			ofBeginShape();
 			for (unsigned int i = 0; i < dftAudio.size() / 2; i++){ // Display only half of the DFT
-				float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
-				float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
-				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
+				// float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
+				// float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
+				float x =  ofMap(i, 0, dftAudio.size(), 0, 900, true);
+				float y = ofMap(std::norm(dftAudio[i]), 0, maxDft, 0, 200, true);
+				ofVertex(x, -y);
 			}
+			// ofBeginShape();
+			// for (unsigned int i = 0; i < dftAudio.size(); i++){
+			// 	float x =  ofMap(i, 0, dftAudio.size(), 0, 900, true);
+			// 	// ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
+			// 	ofDrawLine(x, float(0.), x, -y);
+			// }
+			// ofEndShape(false);
 			ofEndShape(false);
 			
 		ofPopMatrix();
@@ -249,12 +389,21 @@ ofSetColor(225);
 
 		ofSetColor(58, 135, 245); // Change colour to blue
 		ofSetLineWidth(3);
-		dftAudio = compute_dft(dftAudio, lAudio); // Compute DFT of left signal
+
+		ofTranslate(0, 200, 0);
+		dftAudio = compute_dft(dftAudio, rAudio);
+		maxDft = 0.0;
+		for(size_t i=0; i < dftAudio.size(); i++){
+			dftAudioNorm[i] = std::norm(dftAudio[i]);
+			maxDft = (dftAudioNorm[i] > maxDft) ? dftAudioNorm[i] : maxDft;
+		}
 			ofBeginShape();
 			for (unsigned int i = 0; i < dftAudio.size() / 2; i++){ // Display only half of the DFT
-				float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
-				float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
-				ofVertex(x, 100 -std::norm(dftAudio[i])*180.0f);
+				// float freq = ofMap(i, 0, dftAudio.size() / 2, 2, 2000); // Map index to frequency range
+				// float x =  ofMap(freq, 2, 2000, 0, 900, true); // Map frequency to x-axis
+				float x =  ofMap(i, 0, dftAudio.size(), 0, 900, true);
+				float y = ofMap(std::norm(dftAudio[i]), 0, maxDft, 0, 200, true);
+				ofVertex(x, -y);
 			}
 			ofEndShape(false);
 			
@@ -367,6 +516,7 @@ void ofApp::keyPressed  (int key){
 	targetFrequency=pitchToFrequency(pitch); // initialization
 	singleNote.frequency = targetFrequency;
 	singleNote.volume = 0.1;
+	std::cout << "key pressed " << key << std::endl;
 
 }
 
@@ -379,13 +529,13 @@ void ofApp::keyReleased  (int key){
 // remove the frequency change with moving mouse
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-	// int width = ofGetWidth();
-	// pan = (float)x / (float)width;
-	// float height = (float)ofGetHeight();
-	// float heightPct = ((height-y) / height);
-	// targetFrequency = 2000.0f * heightPct;
-	// targetFrequency = 3000.0f;
-	// phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
+	int width = ofGetWidth();
+	float widthPct = ((float)x)/ ((float)width); 
+	float height = (float)ofGetHeight();
+	float heightPct = ((height-y) / height);
+	lowFrequency = 20000 * heightPct;
+	lowQ = 0.01 + 0.99 * widthPct;
+	lowFilter = lowPassFilter(lowFrequency, lowQ);
 }
 
 //--------------------------------------------------------------
@@ -421,6 +571,14 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
+	// lAudioPreviousValues.x_1 = lAudio[bufferSize - 1];
+	// lAudioPreviousValues.x_2 = lAudio[bufferSize - 2];
+	// lAudioPreviousValues.y_1 = lAudioFiltered[bufferSize - 1];
+	// lAudioPreviousValues.y_2 = lAudioFiltered[bufferSize - 2];
+	// rAudioPreviousValues.x_1 = rAudio[bufferSize - 1];
+	// rAudioPreviousValues.x_2 = rAudio[bufferSize - 2];
+	// rAudioPreviousValues.y_1 = rAudioFiltered[bufferSize - 1];
+	// rAudioPreviousValues.y_2 = rAudioFiltered[bufferSize - 2];
 	initSignal();
 	addSignal(singleNote);
 	for(auto & signal : signals ){
@@ -429,9 +587,10 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	for(auto & signal: signalsNotes){
 		addSignal(signal);
 	}
+	applyFilter(lowFilter);
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
-		buffer[i*buffer.getNumChannels()    ] = lAudio[i]; // = sample * volume * leftScale;
-		buffer[i*buffer.getNumChannels() + 1] = rAudio[i]; // = sample * volume * rightScale;
+		buffer[i*buffer.getNumChannels()    ] = lAudioFiltered[i]; // = sample * volume * leftScale;
+		buffer[i*buffer.getNumChannels() + 1] = rAudioFiltered[i]; // = sample * volume * rightScale;
 	}
 }
 
