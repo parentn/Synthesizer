@@ -3,6 +3,7 @@
 #include <math.h>
 #include <iostream>
 
+
 //--------------------------------------------------------------
 void ofApp::addSignal_sin(s_signal& signal){
 	float pan = 0.5f;
@@ -96,21 +97,21 @@ void ofApp::initSignal(){
     }
 }
 
-void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
-	for(int k=0; k<brillance; k++){
-		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
-		signals.push_back(signal);
-	}
-}
+// void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
+// 	for(int k=0; k<brillance; k++){
+// 		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
+// 		signals.push_back(signal);
+// 	}
+// }
 
-void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
-	float sign = 1.;
-	for(int k=0; k<brillance; k++){
-		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
-		signals.push_back(signal);
-		sign = -sign;
-	}
-}
+// void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
+// 	float sign = 1.;
+// 	for(int k=0; k<brillance; k++){
+// 		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
+// 		signals.push_back(signal);
+// 		sign = -sign;
+// 	}
+// }
 
 s_filter ofApp::lowPassFilter(float frequency, float Q){
 	float omega_0 = TWO_PI * frequency / sampleRate;
@@ -183,7 +184,7 @@ void ofApp::setup(){
 	bNoise 				= false;
 	octaveIndex			= 4;
 	mNote				= Notes::No_sound;
-	mBrillance			= 50;
+	mBrillance			= 1;
 	targetFrequency 	= 0.;
 
 	mWaveShape			=WaveShape::Sin;
@@ -556,8 +557,6 @@ void ofApp::keyPressed  (int key){
 	int pitch;
 	int pitchIndex;
 
-	// signal shape : 
-
 	// volume : 
 	if (key == '-' || key == '_' ){
 		volume -= 0.05;
@@ -602,84 +601,84 @@ void ofApp::keyPressed  (int key){
 		{
 		case 'q':
 			mNote=Notes::C;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'z':
 			mNote=Notes::Db;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 's':
 			mNote=Notes::D;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'e':
 			mNote=Notes::Eb;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'd':
 			mNote=Notes::E;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'f':
 			mNote=Notes::F;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 't':
 			mNote=Notes::Gb;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'g':
 			mNote=Notes::G;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'y':
 			mNote=Notes::Ab;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'h':
 			mNote=Notes::A;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'u':
 			mNote=Notes::Bb;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'j':
 			mNote=Notes::B;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
@@ -699,15 +698,13 @@ void ofApp::keyPressed  (int key){
 	// singleNote.frequency = targetFrequency;
 	// singleNote.volume = 0.0;
 	std::cout << "key pressed " << key << std::endl;
-	singleNote.frequency = targetFrequency;
-	singleNote.volume = 0.5;
 
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased  (int key){
 	// signals.clear();
-	singleNote.volume = 0.;
+	// singleNote.volume = 0.;
 	switch (key)
 		{
 		case 'q':
@@ -786,7 +783,7 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-	bNoise = true;
+	// bNoise = true;
 	//----------------------------------- for the change of the shape of the wave
     // Toggle button state only if it's not already pressed
 
@@ -804,7 +801,7 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-	bNoise = false;
+	// bNoise = false;
 	// //----------------------------------- for the change of the shape of the wave
     // // Toggle button state if it was marked as pressed during the click
     // if (buttonPressed && x > buttonX && x < buttonX + buttonWidth && y > buttonY && y < buttonY + buttonHeight) {
@@ -839,50 +836,42 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	// rAudioPreviousValues.y_1 = rAudioFiltered[bufferSize - 1];
 	// rAudioPreviousValues.y_2 = rAudioFiltered[bufferSize - 2];
 	initSignal();
-	for(auto & signal : signals ){
-		addSignal_sin(signal);
-	}
-	addSignal_sin(singleNote);
-	// addSignal_sin(singleNote);
-	// addSignal_saw(singleNote);
-	addSignal_square(singleNote);
-	for(auto & signal: signalsNotes){
-		// addSignal_sin(signal);
-		// addSignal_saw(signal);
-		addSignal_square(signal);
-	}
-	applyFilter(lowFilter);
+	
 	// change signal calculation according to 'mWaveShape', Sin by default
-	switch (mWaveShape){
+	for(auto & signal : signals ){
+		switch (mWaveShape){
+			case WaveShape::Sin:
+				addSignal_sin(singleNote);
+				break;
+			case WaveShape::Saw:
+				addSignal_saw(singleNote);
+				break;
+			case WaveShape::Square:
+				addSignal_square(singleNote);
+				break;
+			default:
+				addSignal_sin(singleNote);
+				break;
+		}
+	}
+	for(auto & signal: signalsNotes){
+		switch (mWaveShape){
 		case WaveShape::Sin:
-			addSignal_sin(singleNote);
+			addSignal_sin(signal);
 			break;
 		case WaveShape::Saw:
-			addSignal_saw(singleNote);
+			addSignal_saw(signal);
 			break;
 		case WaveShape::Square:
-			addSignal_square(singleNote);
+			addSignal_square(signal);
 			break;
 		default:
-			addSignal_sin(singleNote);
+			addSignal_sin(signal);
 			break;
+		}
 	}
-	// for(auto & signal: signalsNotes){
-	// 	switch (mWaveShape){
-	// 	case WaveShape::Sin:
-	// 		addSignal_sin(signal);
-	// 		break;
-	// 	case WaveShape::Saw:
-	// 		addSignal_saw(signal);
-	// 		break;
-	// 	case WaveShape::Square:
-	// 		addSignal_square(signal);
-	// 		break;
-	// 	default:
-	// 		addSignal_sin(signal);
-	// 		break;
-	// 	}
-	// }
+	applyFilter(lowFilter);
+
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
 		buffer[i*buffer.getNumChannels()    ] = lAudioFiltered[i]; // = sample * volume * leftScale;
 		buffer[i*buffer.getNumChannels() + 1] = rAudioFiltered[i]; // = sample * volume * rightScale;
