@@ -41,7 +41,8 @@ enum class Notes
 };
 
 enum class WaveShape
-{	Sin,
+{	
+	Sin,
 	Square,
 	Saw,
 };
@@ -110,8 +111,7 @@ class ofApp : public ofBaseApp{
 
 		int 	mBrillance;
 		static constexpr int numNotes = static_cast<int>(Notes::sizeNotes);
-		s_signal signalsNotes[numNotes];
-		s_signal singleNote;
+		s_signal signalsNotes[numNotes-1];
 
 		float lowFrequency;
 		float highFrequency;
