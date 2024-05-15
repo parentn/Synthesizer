@@ -22,7 +22,7 @@ void ofApp::addSignal_sin(s_signal& signal){
 		}
 		float sample = 0;
 		for (int i = 1; i <= mBrillance; i++){
-			sample+=sin(mBrillance * phase)/mBrillance;
+			sample+=sin(i * phase)/i;
 			}
 		// sample+=sin(mBrillance * phase)/mBrillance;
 		// sample+=sin(phase);
@@ -50,13 +50,10 @@ void ofApp::addSignal_saw(s_signal& signal){
 			phase -= TWO_PI;
 		}
 		float sample = 0;
+		int sign = 1;
 		for (int i = 1; i <= mBrillance; i++){
-			if (i%2==0){
-				sample-=sin(mBrillance * phase)/mBrillance;
-			}
-			else{
-				sample+=sin(mBrillance * phase)/mBrillance;
-			}
+			sample+= ((float) sign)*sin(i * phase)/ ((float)i);
+			sign *= -1;
 			}
         lAudio[i] += sample * volume * leftScale;
         rAudio[i] += sample * volume * rightScale;
@@ -82,10 +79,9 @@ void ofApp::addSignal_square(s_signal& signal){
 			phase -= TWO_PI;
 		}
 		float sample = 0;
-		for (int i = 1; i <= mBrillance; i++){
-			if (i%2!=0){
-				sample+=sin(mBrillance * phase)/mBrillance;
-			}
+
+		for (int i = 1; i <= mBrillance; i+=2){
+			sample+=sin(i * phase)/float(i);
 			}
         lAudio[i] += sample * volume * leftScale;
         rAudio[i] += sample * volume * rightScale;
@@ -187,7 +183,7 @@ void ofApp::setup(){
 	bNoise 				= false;
 	octaveIndex			= 4;
 	mNote				= Notes::No_sound;
-	mBrillance			= 1;
+	mBrillance			= 50;
 	targetFrequency 	= 0.;
 
 	lAudio.assign(bufferSize, 0.0);
@@ -686,6 +682,8 @@ void ofApp::keyPressed  (int key){
 	// singleNote.frequency = targetFrequency;
 	// singleNote.volume = 0.0;
 	std::cout << "key pressed " << key << std::endl;
+	singleNote.frequency = targetFrequency;
+	singleNote.volume = 0.5;
 
 }
 
@@ -828,9 +826,13 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 		addSignal_sin(signal);
 	}
 	addSignal_sin(singleNote);
+	// addSignal_sin(singleNote);
+	// addSignal_saw(singleNote);
+	addSignal_square(singleNote);
 	for(auto & signal: signalsNotes){
-		addSignal_sin(signal);
+		// addSignal_sin(signal);
 		// addSignal_saw(signal);
+		addSignal_square(signal);
 	}
 	applyFilter(lowFilter);
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
