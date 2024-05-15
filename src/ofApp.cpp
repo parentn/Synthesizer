@@ -198,6 +198,20 @@ void ofApp::setup(){
 	highQ = 0.1;
 	lowFilter = lowPassFilter(lowFrequency, lowQ);
 	highFilter = highPassFilter(highFrequency, highQ);
+	//----------------------------------- for the change of the shape of the wave
+	buttonX = 600;
+    buttonY = 80;
+    buttonWidth = 200;
+    buttonHeight = 50;
+    buttonPressed = false;
+
+	    // Initialize SAW button variables
+    buttonX_saw = 303; // Adjust the position as needed
+    buttonY_saw = 80; // Adjust the position as needed
+    buttonWidth = 200; // Adjust the size as needed
+    buttonHeight = 50; // Adjust the size as needed
+    buttonPressed_saw = false;
+	sawWaveEnabled = false; // Start with SAW waveform disabled
 }
 
 
@@ -430,6 +444,41 @@ ofSetColor(225);
 	// 	reportString += "noise";	
 	// }
 	// ofDrawBitmapString(reportString, 32, 779);
+
+
+//----------------------------------- button for the change of the shape of the wave 
+	if(buttonPressed) {
+        ofSetColor(0, 255, 0); // green when pressed
+    } else {
+        ofSetColor(255, 0, 0); // red otherwise
+    }
+    ofDrawRectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+
+	    // Draw text inside the button
+    ofSetColor(255); // Set text color to white
+
+
+// Calculate text position to center it inside the button
+	float textX = buttonX + (buttonWidth - 60) / 2; // Adjust 60 as needed for proper positioning
+	float textY = buttonY + (buttonHeight + 10) / 2; // Adjust 10 as needed for proper positioning
+
+    ofDrawBitmapString("SQUARE", textX, textY); 
+
+// Draw the second button (for SAW)
+if (buttonPressed_saw) {
+    ofSetColor(0, 255, 0); // green when pressed
+} else {
+    ofSetColor(255, 0, 0); // red otherwise
+}
+ofDrawRectangle(buttonX_saw, buttonY_saw, buttonWidth, buttonHeight);
+
+// Draw text inside the second button (for SAW)
+ofSetColor(255); // Set text color to white
+// Calculate text position to center it inside the second button
+float textX_saw = buttonX_saw + (buttonWidth - 60) / 2; // Adjust 60 as needed for proper positioning
+float textY_saw = buttonY_saw + (buttonHeight + 10) / 2; // Adjust 10 as needed for proper positioning
+// Draw text for SAW button
+ofDrawBitmapString("SAW", textX_saw, textY_saw);
 }
 
 //--------------------------------------------------------------
@@ -657,11 +706,30 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 	bNoise = true;
+	//----------------------------------- for the change of the shape of the wave
+    // Toggle button state only if it's not already pressed
+
+    // Mark the button as pressed
+    if (x > buttonX && x < buttonX + buttonWidth && y > buttonY && y < buttonY + buttonHeight) {
+        buttonPressed = !buttonPressed; // Mark the button as pressed
+		WaveEnabled = !WaveEnabled;
+	}
+
+	if (x > buttonX_saw && x < buttonX_saw + buttonWidth && y > buttonY_saw && y < buttonY_saw + buttonHeight) {
+        buttonPressed_saw = !buttonPressed_saw; // Toggle the button state
+        sawWaveEnabled = !sawWaveEnabled; // Toggle the SAW waveform state
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
 	bNoise = false;
+	// //----------------------------------- for the change of the shape of the wave
+    // // Toggle button state if it was marked as pressed during the click
+    // if (buttonPressed && x > buttonX && x < buttonX + buttonWidth && y > buttonY && y < buttonY + buttonHeight) {
+    //     buttonPressed = !buttonPressed; // Toggle the button state
+    //     ofLog() << "Button " << (buttonPressed ? "Pressed" : "Released") << "!";
+    // }
 }
 
 //--------------------------------------------------------------
