@@ -3,9 +3,9 @@
 #include <math.h>
 #include <iostream>
 
-//--------------------------------------------------------------
 
-void ofApp::addSignal(s_signal& signal){
+//--------------------------------------------------------------
+void ofApp::addSignal_sin(s_signal& signal){
 	float pan = 0.5f;
 	float leftScale = 1 - pan;
 	float rightScale = pan;
@@ -21,7 +21,69 @@ void ofApp::addSignal(s_signal& signal){
 		while (phase > TWO_PI){
 			phase -= TWO_PI;
 		}
-        float sample = sin(phase);
+		float sample = 0;
+		for (int i = 1; i <= mBrillance; i++){
+			sample+=sin(i * phase);
+			}
+		// sample+=sin(mBrillance * phase)/mBrillance;
+		// sample+=sin(phase);
+        lAudio[i] += sample * volume * leftScale;
+        rAudio[i] += sample * volume * rightScale;
+        phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::addSignal_saw(s_signal& signal){
+	float pan = 0.5f;
+	float leftScale = 1 - pan;
+	float rightScale = pan;
+
+    float& phase = signal.phase;
+    float volume = signal.volume;
+    float freq = signal.frequency;
+
+	// sin (n) seems to have trouble when n is very large, so we
+	// keep phase in the range of 0-TWO_PI like this:
+
+    for (size_t i = 0; i < bufferSize; i++){
+		while (phase > TWO_PI){
+			phase -= TWO_PI;
+		}
+		float sample = 0;
+		int sign = 1;
+		for (int i = 1; i <= mBrillance; i++){
+			sample+= ((float) sign)*sin(i * phase)/ ((float)i);
+			sign *= -1;
+			}
+        lAudio[i] += sample * volume * leftScale;
+        rAudio[i] += sample * volume * rightScale;
+        phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::addSignal_square(s_signal& signal){
+	float pan = 0.5f;
+	float leftScale = 1 - pan;
+	float rightScale = pan;
+
+    float& phase = signal.phase;
+    float volume = signal.volume;
+    float freq = signal.frequency;
+
+	// sin (n) seems to have trouble when n is very large, so we
+	// keep phase in the range of 0-TWO_PI like this:
+
+    for (size_t i = 0; i < bufferSize; i++){
+		while (phase > TWO_PI){
+			phase -= TWO_PI;
+		}
+		float sample = 0;
+
+		for (int i = 1; i <= mBrillance; i+=2){
+			sample+=sin(i * phase)/float(i);
+			}
         lAudio[i] += sample * volume * leftScale;
         rAudio[i] += sample * volume * rightScale;
         phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
@@ -35,21 +97,21 @@ void ofApp::initSignal(){
     }
 }
 
-void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
-	for(int k=0; k<brillance; k++){
-		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
-		signals.push_back(signal);
-	}
-}
+// void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
+// 	for(int k=0; k<brillance; k++){
+// 		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
+// 		signals.push_back(signal);
+// 	}
+// }
 
-void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
-	float sign = 1.;
-	for(int k=0; k<brillance; k++){
-		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
-		signals.push_back(signal);
-		sign = -sign;
-	}
-}
+// void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
+// 	float sign = 1.;
+// 	for(int k=0; k<brillance; k++){
+// 		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
+// 		signals.push_back(signal);
+// 		sign = -sign;
+// 	}
+// }
 
 s_filter ofApp::lowPassFilter(float frequency, float Q){
 	float omega_0 = TWO_PI * frequency / sampleRate;
@@ -121,8 +183,11 @@ void ofApp::setup(){
 	volume				= 0.1f;
 	bNoise 				= false;
 	octaveIndex			= 4;
-	mNote				= Notes::A;
-	mBrillance			= 0;
+	mNote				= Notes::No_sound;
+	mBrillance			= 1;
+	targetFrequency 	= 0.;
+
+	mWaveShape			=WaveShape::Sin;
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
@@ -179,13 +244,12 @@ void ofApp::setup(){
 	// on OSX: if you want to use ofSoundPlayer together with ofSoundStream you need to synchronize buffersizes.
 	// use ofFmodSetBuffersize(bufferSize) to set the buffersize in fmodx prior to loading a file.
 	targetFrequency = 0.;
-	singleNote = s_signal(0.,0.,0.2);
-
-	for(auto & signal: signalsNotes){
-		signal.phase = 0.;
-		signal.frequency = 1.f;
-		signal.volume = 0.0f;
-	}
+	// singleNote = s_signal(0.,0.,0.2);
+	// for(auto & signal: signalsNotes){
+	// 	signal.phase = 0.;
+	// 	signal.frequency = 1.f;
+	// 	signal.volume = 0.0f;
+	// }
 
 	// Filtering 
 	rAudioFiltered.assign(bufferSize, 0.0);
@@ -212,6 +276,7 @@ void ofApp::setup(){
     buttonHeight = 50; // Adjust the size as needed
     buttonPressed_saw = false;
 	sawWaveEnabled = false; // Start with SAW waveform disabled
+	
 }
 
 
@@ -250,7 +315,7 @@ void ofApp::draw(){
 
 ofSetColor(225);
 	ofDrawBitmapString("AUDIO OUTPUT EXAMPLE", 32, 32);
-	ofDrawBitmapString("press 's' to unpause the audio\npress 'e' to pause the audio", 31, 92);
+	ofDrawBitmapString("press 'b' to unpause the audio\npress 'n' to pause the audio", 31, 92);
 	
 	ofNoFill();
 	
@@ -426,14 +491,15 @@ ofSetColor(225);
 	
 	// Add a comment line with current values of variables :	
 	ofSetColor(225);
-	string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+") modify with mouse x\nsynthesis: ";
-	if( !bNoise ){
-		reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz) modify with mouse y";
-	}else{
-		reportString += "noise";	
-	};
+	// Volume and pan : 
+	string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+")\nsynthesis: ";
+	// Current frequency :
+	reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz)";
+	// Current octave : 
 	reportString += "\noctave: "+ofToString(octaveIndex, 2)+", modify with w/x keys";
 	// reportString+= "\ncurrent note"+ofToString(mNote, 2);
+	// Current brillance : 
+	reportString += "\nBrillance: "+ofToString(mBrillance, 2)+", modify with c(-)/v(+) keys (not less than 1)";
 	ofDrawBitmapString(reportString, 32, 779);
 
 	// 	ofSetColor(225);
@@ -491,6 +557,7 @@ void ofApp::keyPressed  (int key){
 	int pitch;
 	int pitchIndex;
 
+	// volume : 
 	if (key == '-' || key == '_' ){
 		volume -= 0.05;
 		volume = MAX(volume, 0);
@@ -498,15 +565,26 @@ void ofApp::keyPressed  (int key){
 		volume += 0.05;
 		volume = MIN(volume, 1);
 	}
-	
+	// start and stop sound : 
 	if( key == 'b' ){
 		soundStream.start();
 	}
-	
 	if( key == 'n' ){
 			soundStream.stop();
 		}
 
+	// change brillance : c/v
+	if (key=='c'){
+		mBrillance-=1;
+		if (mBrillance<=0){
+			mBrillance=1;
+		}
+	}
+	if (key=='v'){
+		mBrillance+=1;
+	}
+
+	// keyboard notes : 
 	switch (key)
 	{
 	case 'w':
@@ -523,84 +601,84 @@ void ofApp::keyPressed  (int key){
 		{
 		case 'q':
 			mNote=Notes::C;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'z':
 			mNote=Notes::Db;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 's':
 			mNote=Notes::D;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'e':
 			mNote=Notes::Eb;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'd':
 			mNote=Notes::E;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'f':
 			mNote=Notes::F;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 't':
 			mNote=Notes::Gb;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'g':
 			mNote=Notes::G;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'y':
 			mNote=Notes::Ab;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'h':
 			mNote=Notes::A;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'u':
 			mNote=Notes::Bb;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		case 'j':
 			mNote=Notes::B;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.5;
+			signalsNotes[static_cast<int>(mNote)].volume = volume;
 			pitchIndex = static_cast<int>(mNote);
 			pitch = pitchIndex+octaveIndex*12;
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
@@ -626,7 +704,7 @@ void ofApp::keyPressed  (int key){
 //--------------------------------------------------------------
 void ofApp::keyReleased  (int key){
 	// signals.clear();
-	singleNote.volume = 0.;
+	// singleNote.volume = 0.;
 	switch (key)
 		{
 		case 'q':
@@ -705,7 +783,7 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-	bNoise = true;
+	// bNoise = true;
 	//----------------------------------- for the change of the shape of the wave
     // Toggle button state only if it's not already pressed
 
@@ -723,7 +801,7 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-	bNoise = false;
+	// bNoise = false;
 	// //----------------------------------- for the change of the shape of the wave
     // // Toggle button state if it was marked as pressed during the click
     // if (buttonPressed && x > buttonX && x < buttonX + buttonWidth && y > buttonY && y < buttonY + buttonHeight) {
@@ -758,13 +836,42 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	// rAudioPreviousValues.y_1 = rAudioFiltered[bufferSize - 1];
 	// rAudioPreviousValues.y_2 = rAudioFiltered[bufferSize - 2];
 	initSignal();
+	
+	// change signal calculation according to 'mWaveShape', Sin by default
 	for(auto & signal : signals ){
-		addSignal(signal);
+		switch (mWaveShape){
+			case WaveShape::Sin:
+				addSignal_sin(singleNote);
+				break;
+			case WaveShape::Saw:
+				addSignal_saw(singleNote);
+				break;
+			case WaveShape::Square:
+				addSignal_square(singleNote);
+				break;
+			default:
+				addSignal_sin(singleNote);
+				break;
+		}
 	}
 	for(auto & signal: signalsNotes){
-		addSignal(signal);
+		switch (mWaveShape){
+		case WaveShape::Sin:
+			addSignal_sin(signal);
+			break;
+		case WaveShape::Saw:
+			addSignal_saw(signal);
+			break;
+		case WaveShape::Square:
+			addSignal_square(signal);
+			break;
+		default:
+			addSignal_sin(signal);
+			break;
+		}
 	}
 	applyFilter(lowFilter);
+
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
 		buffer[i*buffer.getNumChannels()    ] = lAudioFiltered[i]; // = sample * volume * leftScale;
 		buffer[i*buffer.getNumChannels() + 1] = rAudioFiltered[i]; // = sample * volume * rightScale;

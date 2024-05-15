@@ -36,10 +36,15 @@ enum class Notes
 	A,
 	Bb,
 	B, 
-	sizeNotes
+	sizeNotes,
+	No_sound,
 };
 
-
+enum class WaveShape
+{	Sin,
+	Square,
+	Saw,
+};
 
 class ofApp : public ofBaseApp{
 
@@ -86,7 +91,9 @@ class ofApp : public ofBaseApp{
 		float 	phaseAdder;
 		float 	phaseAdderTarget;
 
-		void addSignal(s_signal& signal);
+		void addSignal_sin(s_signal& signal);
+		void addSignal_saw(s_signal& signal);
+		void addSignal_square(s_signal& signal);
 		void initSignal();
 		void synthesizeSquaredSignal(float frequency, int brillance);
 		void synthesizeSawToothSignal(float frequency, int brillance);
@@ -126,4 +133,5 @@ class ofApp : public ofBaseApp{
     	int buttonX_saw, buttonY_saw;
    		bool buttonPressed_saw;
 		bool sawWaveEnabled; // Variable to track the state of the SAW button
+		WaveShape mWaveShape;
 };
