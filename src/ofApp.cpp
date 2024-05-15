@@ -186,8 +186,8 @@ void ofApp::setup(){
 	volume				= 0.1f;
 	bNoise 				= false;
 	octaveIndex			= 4;
-	mNote				= Notes::A;
-	mBrillance			= 50;
+	mNote				= Notes::No_sound;
+	mBrillance			= 1;
 	targetFrequency 	= 0.;
 
 	lAudio.assign(bufferSize, 0.0);
