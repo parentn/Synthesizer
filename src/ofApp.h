@@ -115,4 +115,9 @@ class ofApp : public ofBaseApp{
 		s_filter lowPassFilter(float frequency, float Q);
 		s_filter highPassFilter(float frequency, float Q);
 		void applyFilter(s_filter filter);
+		//----------------------------------- for the change of the shape of the wave
+
+
+    	int buttonX, buttonY, buttonWidth, buttonHeight;
+    	bool buttonPressed;
 };

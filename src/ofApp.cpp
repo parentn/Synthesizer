@@ -198,6 +198,12 @@ void ofApp::setup(){
 	highQ = 0.1;
 	lowFilter = lowPassFilter(lowFrequency, lowQ);
 	highFilter = highPassFilter(highFrequency, highQ);
+	//----------------------------------- for the change of the shape of the wave
+	buttonX = 600;
+    buttonY = 80;
+    buttonWidth = 200;
+    buttonHeight = 50;
+    buttonPressed = false;
 }
 
 
@@ -430,6 +436,15 @@ ofSetColor(225);
 	// 	reportString += "noise";	
 	// }
 	// ofDrawBitmapString(reportString, 32, 779);
+
+
+//----------------------------------- for the change of the shape of the wave
+	if(buttonPressed) {
+        ofSetColor(255, 0, 0); // Red when pressed
+    } else {
+        ofSetColor(0, 255, 0); // Green otherwise
+    }
+    ofDrawRectangle(buttonX, buttonY, buttonWidth, buttonHeight);
 }
 
 //--------------------------------------------------------------
@@ -657,11 +672,24 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 	bNoise = true;
+	//----------------------------------- for the change of the shape of the wave
+    // Toggle button state only if it's not already pressed
+
+    // Mark the button as pressed
+    if (x > buttonX && x < buttonX + buttonWidth && y > buttonY && y < buttonY + buttonHeight) {
+        buttonPressed = true; // Mark the button as pressed
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
 	bNoise = false;
+	// //----------------------------------- for the change of the shape of the wave
+    // Toggle button state if it was marked as pressed during the click
+    if (buttonPressed && x > buttonX && x < buttonX + buttonWidth && y > buttonY && y < buttonY + buttonHeight) {
+        buttonPressed = !buttonPressed; // Toggle the button state
+        ofLog() << "Button " << (buttonPressed ? "Pressed" : "Released") << "!";
+    }
 }
 
 //--------------------------------------------------------------
