@@ -22,7 +22,7 @@ void ofApp::addSignal_sin(s_signal& signal){
 		}
 		float sample = 0;
 		for (int i = 1; i <= mBrillance; i++){
-			sample+=sin(i * phase)/i;
+			sample+=sin(i * phase)/float(i);
 			}
 		// sample+=sin(mBrillance * phase)/mBrillance;
 		// sample+=sin(phase);
@@ -185,6 +185,8 @@ void ofApp::setup(){
 	mNote				= Notes::No_sound;
 	mBrillance			= 50;
 	targetFrequency 	= 0.;
+
+	mWaveShape			=WaveShape::Sin;
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
@@ -488,14 +490,15 @@ ofSetColor(225);
 	
 	// Add a comment line with current values of variables :	
 	ofSetColor(225);
-	string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+") modify with mouse x\nsynthesis: ";
-	if( !bNoise ){
-		reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz) modify with mouse y";
-	}else{
-		reportString += "noise";	
-	};
+	// Volume and pan : 
+	string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+")\nsynthesis: ";
+	// Current frequency :
+	reportString += "sine wave (" + ofToString(targetFrequency, 2) + "hz)";
+	// Current octave : 
 	reportString += "\noctave: "+ofToString(octaveIndex, 2)+", modify with w/x keys";
 	// reportString+= "\ncurrent note"+ofToString(mNote, 2);
+	// Current brillance : 
+	reportString += "\nBrillance: "+ofToString(mBrillance, 2)+", modify with c(-)/v(+) keys (not less than 1)";
 	ofDrawBitmapString(reportString, 32, 779);
 
 	// 	ofSetColor(225);
@@ -553,6 +556,9 @@ void ofApp::keyPressed  (int key){
 	int pitch;
 	int pitchIndex;
 
+	// signal shape : 
+
+	// volume : 
 	if (key == '-' || key == '_' ){
 		volume -= 0.05;
 		volume = MAX(volume, 0);
@@ -560,15 +566,26 @@ void ofApp::keyPressed  (int key){
 		volume += 0.05;
 		volume = MIN(volume, 1);
 	}
-	
+	// start and stop sound : 
 	if( key == 'b' ){
 		soundStream.start();
 	}
-	
 	if( key == 'n' ){
 			soundStream.stop();
 		}
 
+	// change brillance : c/v
+	if (key=='c'){
+		mBrillance-=1;
+		if (mBrillance<=0){
+			mBrillance=1;
+		}
+	}
+	if (key=='v'){
+		mBrillance+=1;
+	}
+
+	// keyboard notes : 
 	switch (key)
 	{
 	case 'w':
@@ -835,6 +852,37 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 		addSignal_square(signal);
 	}
 	applyFilter(lowFilter);
+	// change signal calculation according to 'mWaveShape', Sin by default
+	switch (mWaveShape){
+		case WaveShape::Sin:
+			addSignal_sin(singleNote);
+			break;
+		case WaveShape::Saw:
+			addSignal_saw(singleNote);
+			break;
+		case WaveShape::Square:
+			addSignal_square(singleNote);
+			break;
+		default:
+			addSignal_sin(singleNote);
+			break;
+	}
+	// for(auto & signal: signalsNotes){
+	// 	switch (mWaveShape){
+	// 	case WaveShape::Sin:
+	// 		addSignal_sin(signal);
+	// 		break;
+	// 	case WaveShape::Saw:
+	// 		addSignal_saw(signal);
+	// 		break;
+	// 	case WaveShape::Square:
+	// 		addSignal_square(signal);
+	// 		break;
+	// 	default:
+	// 		addSignal_sin(signal);
+	// 		break;
+	// 	}
+	// }
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
 		buffer[i*buffer.getNumChannels()    ] = lAudioFiltered[i]; // = sample * volume * leftScale;
 		buffer[i*buffer.getNumChannels() + 1] = rAudioFiltered[i]; // = sample * volume * rightScale;

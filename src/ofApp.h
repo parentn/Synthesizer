@@ -40,7 +40,11 @@ enum class Notes
 	No_sound,
 };
 
-
+enum class WaveShape
+{	Sin,
+	Square,
+	Saw,
+};
 
 class ofApp : public ofBaseApp{
 
@@ -129,4 +133,5 @@ class ofApp : public ofBaseApp{
     	int buttonX_saw, buttonY_saw;
    		bool buttonPressed_saw;
 		bool sawWaveEnabled; // Variable to track the state of the SAW button
+		WaveShape mWaveShape;
 };
