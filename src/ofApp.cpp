@@ -113,6 +113,13 @@ void ofApp::setup(){
 	// on OSX: if you want to use ofSoundPlayer together with ofSoundStream you need to synchronize buffersizes.
 	// use ofFmodSetBuffersize(bufferSize) to set the buffersize in fmodx prior to loading a file.
 	targetFrequency = 0.;
+	singleNote = s_signal(0.,0.,0.2);
+
+	for(auto & signal: signalsNotes){
+		signal.phase = 0.;
+		signal.frequency = 1.;
+		signal.volume = 0.05;
+	}
 }
 
 
@@ -348,6 +355,7 @@ void ofApp::keyPressed  (int key){
 			break;
 		case 'j':
 			mNote=Notes::B;
+			signalsNotes[static_cast<int>(mNote)].volume = 0.1;
 			break;
 		default:
 			// compilation error: jump to default:
@@ -357,13 +365,15 @@ void ofApp::keyPressed  (int key){
 	int pitchIndex = static_cast<int>(mNote);
 	int pitch=pitchIndex+octaveIndex*12;
 	targetFrequency=pitchToFrequency(pitch); // initialization
-	// phaseAdderTarget = (targetFrequency / (float) sampleRate) * TWO_PI;
+	singleNote.frequency = targetFrequency;
+	singleNote.volume = 0.1;
 
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased  (int key){
-	signals.clear();
+	// signals.clear();
+	singleNote.volume = 0.;
 }
 
 // remove the frequency change with moving mouse
@@ -412,9 +422,11 @@ void ofApp::windowResized(int w, int h){
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
 	initSignal();
-	s_signal signal(0., targetFrequency, 0.5);
-	signals.push_back(signal);
+	addSignal(singleNote);
 	for(auto & signal : signals ){
+		addSignal(signal);
+	}
+	for(auto & signal: signalsNotes){
 		addSignal(signal);
 	}
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
