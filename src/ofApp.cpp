@@ -21,11 +21,11 @@ void ofApp::addSignal_sin(s_signal& signal){
 			phase -= TWO_PI;
 		}
 		float sample = 0;
-		// for (int i = 1; i <= mBrillance; i++){
-		// 	sample+=sin(mBrillance * phase)/mBrillance;
-		// 	}
+		for (int i = 1; i <= mBrillance; i++){
+			sample+=sin(mBrillance * phase)/mBrillance;
+			}
 		// sample+=sin(mBrillance * phase)/mBrillance;
-		sample+=sin(phase);
+		// sample+=sin(phase);
         lAudio[i] += sample * volume * leftScale;
         rAudio[i] += sample * volume * rightScale;
         phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
@@ -187,7 +187,7 @@ void ofApp::setup(){
 	bNoise 				= false;
 	octaveIndex			= 4;
 	mNote				= Notes::A;
-	mBrillance			= 0;
+	mBrillance			= 50;
 	targetFrequency 	= 0.;
 
 	lAudio.assign(bufferSize, 0.0);
@@ -245,14 +245,12 @@ void ofApp::setup(){
 	// on OSX: if you want to use ofSoundPlayer together with ofSoundStream you need to synchronize buffersizes.
 	// use ofFmodSetBuffersize(bufferSize) to set the buffersize in fmodx prior to loading a file.
 	targetFrequency = 0.;
-	singleNote = s_signal(0.,0.,0.2);
-
-	for(auto & signal: signalsNotes){
-		signal.phase = 0.;
-		signal.frequency = 1.f;
-		signal.volume = 0.0f;
-	}
-<<<<<<< HEAD
+	// singleNote = s_signal(0.,0.,0.2);
+	// for(auto & signal: signalsNotes){
+	// 	signal.phase = 0.;
+	// 	signal.frequency = 1.f;
+	// 	signal.volume = 0.0f;
+	// }
 
 	// Filtering 
 	rAudioFiltered.assign(bufferSize, 0.0);
@@ -279,9 +277,7 @@ void ofApp::setup(){
     buttonHeight = 50; // Adjust the size as needed
     buttonPressed_saw = false;
 	sawWaveEnabled = false; // Start with SAW waveform disabled
-=======
 	
->>>>>>> 2605175 (change addsignal to addsignal_sin)
 }
 
 
@@ -320,7 +316,7 @@ void ofApp::draw(){
 
 ofSetColor(225);
 	ofDrawBitmapString("AUDIO OUTPUT EXAMPLE", 32, 32);
-	ofDrawBitmapString("press 's' to unpause the audio\npress 'e' to pause the audio", 31, 92);
+	ofDrawBitmapString("press 'b' to unpause the audio\npress 'n' to pause the audio", 31, 92);
 	
 	ofNoFill();
 	
@@ -831,8 +827,10 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	for(auto & signal : signals ){
 		addSignal_sin(signal);
 	}
+	addSignal_sin(singleNote);
 	for(auto & signal: signalsNotes){
-		addSignal(signal);
+		addSignal_sin(signal);
+		// addSignal_saw(signal);
 	}
 	applyFilter(lowFilter);
 	for (size_t i = 0; i < buffer.getNumFrames(); i++){
