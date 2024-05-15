@@ -4,8 +4,7 @@
 #include <iostream>
 
 //--------------------------------------------------------------
-
-void ofApp::addSignal(s_signal& signal){
+void ofApp::addSignal_sin(s_signal& signal){
 	float pan = 0.5f;
 	float leftScale = 1 - pan;
 	float rightScale = pan;
@@ -21,7 +20,73 @@ void ofApp::addSignal(s_signal& signal){
 		while (phase > TWO_PI){
 			phase -= TWO_PI;
 		}
-        float sample = sin(phase);
+		float sample = 0;
+		// for (int i = 1; i <= mBrillance; i++){
+		// 	sample+=sin(mBrillance * phase)/mBrillance;
+		// 	}
+		// sample+=sin(mBrillance * phase)/mBrillance;
+		sample+=sin(phase);
+        lAudio[i] += sample * volume * leftScale;
+        rAudio[i] += sample * volume * rightScale;
+        phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::addSignal_saw(s_signal& signal){
+	float pan = 0.5f;
+	float leftScale = 1 - pan;
+	float rightScale = pan;
+
+    float& phase = signal.phase;
+    float volume = signal.volume;
+    float freq = signal.frequency;
+
+	// sin (n) seems to have trouble when n is very large, so we
+	// keep phase in the range of 0-TWO_PI like this:
+
+    for (size_t i = 0; i < bufferSize; i++){
+		while (phase > TWO_PI){
+			phase -= TWO_PI;
+		}
+		float sample = 0;
+		for (int i = 1; i <= mBrillance; i++){
+			if (i%2==0){
+				sample-=sin(mBrillance * phase)/mBrillance;
+			}
+			else{
+				sample+=sin(mBrillance * phase)/mBrillance;
+			}
+			}
+        lAudio[i] += sample * volume * leftScale;
+        rAudio[i] += sample * volume * rightScale;
+        phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::addSignal_square(s_signal& signal){
+	float pan = 0.5f;
+	float leftScale = 1 - pan;
+	float rightScale = pan;
+
+    float& phase = signal.phase;
+    float volume = signal.volume;
+    float freq = signal.frequency;
+
+	// sin (n) seems to have trouble when n is very large, so we
+	// keep phase in the range of 0-TWO_PI like this:
+
+    for (size_t i = 0; i < bufferSize; i++){
+		while (phase > TWO_PI){
+			phase -= TWO_PI;
+		}
+		float sample = 0;
+		for (int i = 1; i <= mBrillance; i++){
+			if (i%2!=0){
+				sample+=sin(mBrillance * phase)/mBrillance;
+			}
+			}
         lAudio[i] += sample * volume * leftScale;
         rAudio[i] += sample * volume * rightScale;
         phase += 2.0 * M_PI * freq / ((float) sampleRate); // 2Pi * freq * dt;
@@ -123,6 +188,7 @@ void ofApp::setup(){
 	octaveIndex			= 4;
 	mNote				= Notes::A;
 	mBrillance			= 0;
+	targetFrequency 	= 0.;
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
@@ -186,6 +252,7 @@ void ofApp::setup(){
 		signal.frequency = 1.f;
 		signal.volume = 0.0f;
 	}
+<<<<<<< HEAD
 
 	// Filtering 
 	rAudioFiltered.assign(bufferSize, 0.0);
@@ -212,6 +279,9 @@ void ofApp::setup(){
     buttonHeight = 50; // Adjust the size as needed
     buttonPressed_saw = false;
 	sawWaveEnabled = false; // Start with SAW waveform disabled
+=======
+	
+>>>>>>> 2605175 (change addsignal to addsignal_sin)
 }
 
 
@@ -759,7 +829,7 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	// rAudioPreviousValues.y_2 = rAudioFiltered[bufferSize - 2];
 	initSignal();
 	for(auto & signal : signals ){
-		addSignal(signal);
+		addSignal_sin(signal);
 	}
 	for(auto & signal: signalsNotes){
 		addSignal(signal);
