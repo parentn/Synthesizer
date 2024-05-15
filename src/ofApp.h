@@ -66,7 +66,9 @@ class ofApp : public ofBaseApp{
 		float 	phaseAdder;
 		float 	phaseAdderTarget;
 
-		void addSignal(s_signal& signal);
+		void addSignal_sin(s_signal& signal);
+		void addSignal_saw(s_signal& signal);
+		void addSignal_square(s_signal& signal);
 		void initSignal();
 		size_t bufferSize;
 		size_t sampleRate;
