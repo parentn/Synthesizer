@@ -120,4 +120,10 @@ class ofApp : public ofBaseApp{
 
     	int buttonX, buttonY, buttonWidth, buttonHeight;
     	bool buttonPressed;
+		bool WaveEnabled;
+
+		    // Button variables for SAW button
+    	int buttonX_saw, buttonY_saw;
+   		bool buttonPressed_saw;
+		bool sawWaveEnabled; // Variable to track the state of the SAW button
 };
