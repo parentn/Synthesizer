@@ -97,6 +97,7 @@ void ofApp::initSignal(){
     }
 }
 
+<<<<<<< HEAD
 // void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
 // 	for(int k=0; k<brillance; k++){
 // 		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
@@ -112,6 +113,23 @@ void ofApp::initSignal(){
 // 		sign = -sign;
 // 	}
 // }
+=======
+void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
+	for(int k=0; k<brillance; k++){
+		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
+		signals.push_back(signal);
+	}
+}
+
+void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
+	float sign = 1.;
+	for(int k=0; k<brillance; k++){
+		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
+		signals.push_back(signal);
+		sign = -sign;
+	}
+}
+>>>>>>> a77dfc7 (added filters)
 
 s_filter ofApp::lowPassFilter(float frequency, float Q){
 	float omega_0 = TWO_PI * frequency / sampleRate;
@@ -251,6 +269,15 @@ void ofApp::setup(){
 	// 	signal.volume = 0.0f;
 	// }
 
+<<<<<<< HEAD
+=======
+	for(auto & signal: signalsNotes){
+		signal.phase = 0.;
+		signal.frequency = 1.f;
+		signal.volume = 0.0f;
+	}
+
+>>>>>>> a77dfc7 (added filters)
 	// Filtering 
 	rAudioFiltered.assign(bufferSize, 0.0);
 	lAudioFiltered.assign(bufferSize, 0.0);
