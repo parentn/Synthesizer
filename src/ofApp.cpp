@@ -22,7 +22,7 @@ void ofApp::addSignal_sin(s_signal& signal){
 		}
 		float sample = 0;
 		for (int i = 1; i <= mBrillance; i++){
-			sample+=sin(i * phase)/float(i);
+			sample+=sin(i * phase);
 			}
 		// sample+=sin(mBrillance * phase)/mBrillance;
 		// sample+=sin(phase);
