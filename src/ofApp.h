@@ -21,7 +21,8 @@ enum class Notes
 	A,
 	Bb,
 	B, 
-	sizeNotes
+	sizeNotes,
+	No_sound,
 };
 
 

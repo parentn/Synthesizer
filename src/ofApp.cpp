@@ -119,8 +119,8 @@ void ofApp::setup(){
 	volume				= 0.1f;
 	bNoise 				= false;
 	octaveIndex			= 4;
-	mNote				= Notes::A;
-	mBrillance			= 50;
+	mNote				= Notes::No_sound;
+	mBrillance			= 1;
 	targetFrequency 	= 0.;
 
 	lAudio.assign(bufferSize, 0.0);
@@ -421,16 +421,23 @@ void ofApp::keyPressed  (int key){
 			break;
 		case 'j':
 			mNote=Notes::B;
-			signalsNotes[static_cast<int>(mNote)].volume = 0.1;
+			//signalsNotes[static_cast<int>(mNote)].volume = 0.1;
 			break;
 		default:
 			// compilation error: jump to default:
-			mNote=Notes::A;
+			mNote = Notes::No_sound;
+			//mNote=Notes::A;
 			break;
 		}
 	int pitchIndex = static_cast<int>(mNote);
 	int pitch=pitchIndex+octaveIndex*12;
-	targetFrequency=pitchToFrequency(pitch); // initialization
+	if (mNote == Notes::No_sound) {
+		targetFrequency = 0;
+	}
+	else {
+		targetFrequency = pitchToFrequency(pitch);
+	}
+	// targetFrequency=pitchToFrequency(pitch); // initialization
 	singleNote.frequency = targetFrequency;
 	singleNote.volume = 0.1;
 
