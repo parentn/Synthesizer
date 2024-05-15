@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ofMain.h"
 #include <complex>
 
@@ -8,6 +6,7 @@ typedef struct{
 	float frequency;
 	float volume;
 } s_signal;
+
 enum class Notes
 {
 	C,
@@ -21,8 +20,8 @@ enum class Notes
 	Ab,
 	A,
 	Bb,
-	B
-
+	B, 
+	sizeNotes
 };
 
 
@@ -79,4 +78,7 @@ class ofApp : public ofBaseApp{
 		int 	octaveIndex;
 
 		int 	mBrillance;
+		static constexpr int numNotes = static_cast<int>(Notes::sizeNotes);
+		s_signal signalsNotes[numNotes];
+		s_signal singleNote;
 };
