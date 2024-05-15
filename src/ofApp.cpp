@@ -169,6 +169,14 @@ void ofApp::setup(){
 
 	ofBackground(34, 34, 34);
 
+	bufferSize = soundStream.getBufferSize();
+	sampleRate = soundStream.getSampleRate();
+	// bufferSize		= 512;
+	// sampleRate 		= 44100;
+
+	std::cout << "Buffer Size is " << bufferSize << std::endl;
+	std::cout << "Sample Rate is " << sampleRate << std::endl;
+
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
 	phaseAdderTarget 	= 0.0f;
@@ -695,7 +703,7 @@ void ofApp::keyReleased  (int key){
 		{
 		case 'q':
 			mNote=Notes::C;
-				signalsNotes[static_cast<int>(mNote)].volume = 0.0;
+			signalsNotes[static_cast<int>(mNote)].volume = 0.0;
 			break;
 		case 'z':
 			mNote=Notes::Db;
@@ -783,6 +791,14 @@ void ofApp::mousePressed(int x, int y, int button){
         buttonPressed_saw = !buttonPressed_saw; // Toggle the button state
         sawWaveEnabled = !sawWaveEnabled; // Toggle the SAW waveform state
     }
+	if (WaveEnabled) {
+		mWaveShape = WaveShape::Square;
+	} else if (sawWaveEnabled) {
+		mWaveShape = WaveShape::Saw;
+	} else {
+		mWaveShape = WaveShape::Sin;
+	}
+
 }
 
 //--------------------------------------------------------------
