@@ -97,21 +97,21 @@ void ofApp::initSignal(){
     }
 }
 
-// void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
-// 	for(int k=0; k<brillance; k++){
-// 		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
-// 		signals.push_back(signal);
-// 	}
-// }
+void ofApp::synthesizeSquaredSignal(float frequency, int brillance){
+	for(int k=0; k<brillance; k++){
+		s_signal signal(0., (float(2*k+1)*frequency), volume /((float)(2*k+1)));
+		signals.push_back(signal);
+	}
+}
 
-// void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
-// 	float sign = 1.;
-// 	for(int k=0; k<brillance; k++){
-// 		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
-// 		signals.push_back(signal);
-// 		sign = -sign;
-// 	}
-// }
+void ofApp::synthesizeSawToothSignal(float frequency, int brillance){
+	float sign = 1.;
+	for(int k=0; k<brillance; k++){
+		s_signal signal(0., (float(k+1)*frequency), sign * volume /((float)(k+1)));
+		signals.push_back(signal);
+		sign = -sign;
+	}
+}
 
 s_filter ofApp::lowPassFilter(float frequency, float Q){
 	float omega_0 = TWO_PI * frequency / sampleRate;
@@ -176,7 +176,7 @@ void ofApp::setup(){
 
 	std::cout << "Buffer Size is " << bufferSize << std::endl;
 	std::cout << "Sample Rate is " << sampleRate << std::endl;
-	
+
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
 	phaseAdderTarget 	= 0.0f;
@@ -530,21 +530,21 @@ ofSetColor(225);
 
     ofDrawBitmapString("SQUARE", textX, textY); 
 
-// Draw the second button (for SAW)
-if (buttonPressed_saw) {
-    ofSetColor(0, 255, 0); // green when pressed
-} else {
-    ofSetColor(255, 0, 0); // red otherwise
-}
-ofDrawRectangle(buttonX_saw, buttonY_saw, buttonWidth, buttonHeight);
+	// Draw the second button (for SAW)
+	if (buttonPressed_saw) {
+		ofSetColor(0, 255, 0); // green when pressed
+	} else {
+		ofSetColor(255, 0, 0); // red otherwise
+	}
+	ofDrawRectangle(buttonX_saw, buttonY_saw, buttonWidth, buttonHeight);
 
-// Draw text inside the second button (for SAW)
-ofSetColor(255); // Set text color to white
-// Calculate text position to center it inside the second button
-float textX_saw = buttonX_saw + (buttonWidth - 60) / 2; // Adjust 60 as needed for proper positioning
-float textY_saw = buttonY_saw + (buttonHeight + 10) / 2; // Adjust 10 as needed for proper positioning
-// Draw text for SAW button
-ofDrawBitmapString("SAW", textX_saw, textY_saw);
+	// Draw text inside the second button (for SAW)
+	ofSetColor(255); // Set text color to white
+	// Calculate text position to center it inside the second button
+	float textX_saw = buttonX_saw + (buttonWidth - 60) / 2; // Adjust 60 as needed for proper positioning
+	float textY_saw = buttonY_saw + (buttonHeight + 10) / 2; // Adjust 10 as needed for proper positioning
+	// Draw text for SAW button
+	ofDrawBitmapString("SAW", textX_saw, textY_saw);
 }
 
 //--------------------------------------------------------------
@@ -684,12 +684,6 @@ void ofApp::keyPressed  (int key){
 			signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		default:
-			// compilation error: jump to default:
-			mNote=Notes::A;
-			// signalsNotes[static_cast<int>(mNote)].volume = 0.5;
-			// pitchIndex = static_cast<int>(mNote);
-			// pitch = pitchIndex+octaveIndex*12;
-			// signalsNotes[static_cast<int>(mNote)].frequency = pitchToFrequency(pitch);
 			break;
 		}
 	// pitchIndex = static_cast<int>(mNote);
@@ -709,7 +703,7 @@ void ofApp::keyReleased  (int key){
 		{
 		case 'q':
 			mNote=Notes::C;
-				signalsNotes[static_cast<int>(mNote)].volume = 0.0;
+			signalsNotes[static_cast<int>(mNote)].volume = 0.0;
 			break;
 		case 'z':
 			mNote=Notes::Db;
@@ -797,6 +791,14 @@ void ofApp::mousePressed(int x, int y, int button){
         buttonPressed_saw = !buttonPressed_saw; // Toggle the button state
         sawWaveEnabled = !sawWaveEnabled; // Toggle the SAW waveform state
     }
+	if (WaveEnabled) {
+		mWaveShape = WaveShape::Square;
+	} else if (sawWaveEnabled) {
+		mWaveShape = WaveShape::Saw;
+	} else {
+		mWaveShape = WaveShape::Sin;
+	}
+
 }
 
 //--------------------------------------------------------------
@@ -827,47 +829,39 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
-	// lAudioPreviousValues.x_1 = lAudio[bufferSize - 1];
-	// lAudioPreviousValues.x_2 = lAudio[bufferSize - 2];
-	// lAudioPreviousValues.y_1 = lAudioFiltered[bufferSize - 1];
-	// lAudioPreviousValues.y_2 = lAudioFiltered[bufferSize - 2];
-	// rAudioPreviousValues.x_1 = rAudio[bufferSize - 1];
-	// rAudioPreviousValues.x_2 = rAudio[bufferSize - 2];
-	// rAudioPreviousValues.y_1 = rAudioFiltered[bufferSize - 1];
-	// rAudioPreviousValues.y_2 = rAudioFiltered[bufferSize - 2];
 	initSignal();
 	
 	// change signal calculation according to 'mWaveShape', Sin by default
-	for(auto & signal : signals ){
+	for(auto& signal : signals ){
 		switch (mWaveShape){
 			case WaveShape::Sin:
-				addSignal_sin(singleNote);
+				addSignal_sin(signal);
 				break;
 			case WaveShape::Saw:
-				addSignal_saw(singleNote);
+				addSignal_saw(signal);
 				break;
 			case WaveShape::Square:
-				addSignal_square(singleNote);
+				addSignal_square(signal);
 				break;
 			default:
-				addSignal_sin(singleNote);
+				addSignal_sin(signal);
 				break;
 		}
 	}
-	for(auto & signal: signalsNotes){
+	for(auto& signal: signalsNotes){
 		switch (mWaveShape){
-		case WaveShape::Sin:
-			addSignal_sin(signal);
-			break;
-		case WaveShape::Saw:
-			addSignal_saw(signal);
-			break;
-		case WaveShape::Square:
-			addSignal_square(signal);
-			break;
-		default:
-			addSignal_sin(signal);
-			break;
+			case WaveShape::Sin:
+				addSignal_sin(signal);
+				break;
+			case WaveShape::Saw:
+				addSignal_saw(signal);
+				break;
+			case WaveShape::Square:
+				addSignal_square(signal);
+				break;
+			default:
+				addSignal_sin(signal);
+				break;
 		}
 	}
 	applyFilter(lowFilter);
